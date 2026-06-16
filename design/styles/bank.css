@@ -328,3 +328,55 @@
     .led-blink-3 { animation: ledBlink3 7.4s ease-in-out infinite; animation-delay: 0.7s; }
     .led-blink-4 { animation: ledBlink4 4.2s ease-in-out infinite; animation-delay: 2.1s; }
 
+    /* ── Mobile (≤720px) Bank layout ────────────────────────────────────────────
+       On a phone the fixed 354px vault + hanging sign + action buttons don't fit
+       the short viewport, so the buttons used to overflow off-screen (they
+       "floated" out of the clipped room). Fix:
+         · pin the action buttons to the bottom inner edge — always visible,
+           bottom-aligned, never floating;
+         · centre the vault in the space above and scale it (JS sets --vault-scale)
+           to the largest size that still fits the frame;
+         · let the vault paint OVER the buttons so the door swing reads in front —
+           a deliberate beat. The buttons stay partly visible (peek) + tappable.
+       Desktop (>720px viewport) never matches this block and is untouched. */
+    @media (max-width: 720px) {
+      .room--bank { padding-bottom: 0; }
+
+      /* Centre the vault between the sign and the bottom (was a fixed 120px gap
+         that pinned it too low and pushed the buttons out of frame). */
+      .room--bank .price-sign + .spacer { flex: 1; }
+
+      /* Vault: scaled to fit (origin centre, symmetric) and stacked above the
+         buttons so the opening door sweeps in front of them. */
+      .vault-button {
+        position: relative;
+        z-index: 2;
+        transform: scale(var(--vault-scale, 1));
+        transform-origin: center;
+      }
+
+      /* Action buttons: pinned to the bottom inner edge, slightly inset so they
+         sit at "the start of the inside of the phone", not the very edge. */
+      .room--bank .action-zone {
+        position: absolute;
+        left: 28px;
+        right: 28px;
+        bottom: 12px;
+        width: auto;
+        min-height: 0;
+        margin-bottom: 0;
+        z-index: 1;
+      }
+
+      /* Compact buttons so more of them peeks below the vault and the tap target
+         stays reachable even when the vault overlaps their top edge. */
+      .action,
+      .vault-action {
+        padding: 13px 20px;
+        font-size: 16px;
+        box-shadow: 0 4px 0 var(--shadow);
+      }
+      .action:active,
+      .vault-action:active { box-shadow: 0 1px 0 var(--shadow); }
+    }
+

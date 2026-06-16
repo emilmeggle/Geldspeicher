@@ -1220,6 +1220,32 @@ document.querySelectorAll('[data-buy-satoshi]').forEach((btn) =>
   btn.addEventListener('click', () => addSatoshiPiece())
 );
 
+// ── Mobile vault fit ────────────────────────────────────────────────────────
+// The vault is a fixed 354px square; on a phone that's wider than the room and
+// taller than the space between the hanging sign and the bottom-pinned buttons.
+// Scale it down to the largest size (capped at 1 — never enlarge) that still
+// fits the frame, taking whichever of width/height binds. The buttons are
+// pinned to the bottom in CSS and the vault may overlap them, so the vault only
+// needs to fit between the sign and the room's bottom edge, not above the
+// buttons. Desktop (>720px viewport) skips this and keeps the 354px vault.
+const VAULT_NATURAL = 354;
+const room = phone.querySelector('.room--bank');
+const fitVaultScale = () => {
+  if (!window.matchMedia('(max-width: 720px)').matches) {
+    phone.style.removeProperty('--vault-scale');
+    return;
+  }
+  const roomBox    = room.getBoundingClientRect();
+  const signBottom = sign.getBoundingClientRect().bottom;
+  const availH = roomBox.bottom - signBottom - 12; // 12px breathing room
+  const availW = roomBox.width - 20;               // 10px off each side wall
+  const scale  = Math.max(0.55, Math.min(1, availH / VAULT_NATURAL, availW / VAULT_NATURAL));
+  phone.style.setProperty('--vault-scale', scale.toFixed(3));
+};
+fitVaultScale();
+window.addEventListener('resize', fitVaultScale);
+window.addEventListener('orientationchange', fitVaultScale);
+
 // Boot
 const cached = loadCachedPrice();
 if (cached != null) { currentPrice = cached; setPrice(cached); swingIn(); }

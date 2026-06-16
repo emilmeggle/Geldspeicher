@@ -69,20 +69,22 @@
   .top__links a:hover { color: var(--num); }
 
   /* ── Stage ───────────────────────────────────────────────────── */
-  /* Desktop: title (top) over the buttons (pushed to the bottom) on the left, tall phone on the right. */
+  /* Desktop: the title (top) and the unit buttons (filling the space below) share ONE left column,
+     so both sit at the same distance from the tall phone on the right. */
   .stage {
     position: relative; z-index: 2; min-height: 100svh;
     display: grid;
-    grid-template-columns: auto auto auto;
-    grid-template-areas: "intro phone rail";   /* text · phone · buttons — flanking, equidistant */
-    align-items: center; align-content: center; justify-content: center;
-    column-gap: clamp(16px, 2vw, 34px);
+    grid-template-columns: auto auto;
+    grid-template-areas: "left phone";
+    align-items: stretch; align-content: center; justify-content: center;
+    column-gap: clamp(20px, 3vw, 48px);
     row-gap: clamp(16px, 2.6vh, 32px);
     padding: clamp(40px, 7.5vh, 92px) clamp(20px, 3.4vw, 56px);
     text-align: left;
   }
-  .intro { grid-area: intro; align-self: start; width: 100%; max-width: 360px; } /* top-left, clear of the door's swing */
-  .units { grid-area: rail; align-self: center; justify-self: start; }            /* right of the phone, 24px gap */
+  /* left column — stretches to the phone's height; title pinned top, buttons fill the rest. */
+  .left { grid-area: left; display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }
+  .intro { width: 100%; max-width: 360px; margin-bottom: clamp(20px, 4vh, 52px); }
   .device-wrap { grid-area: phone; align-self: center; justify-self: center; }
   .headline {
     font-family: var(--serif); font-weight: 500;
@@ -140,8 +142,9 @@
   .device__btn--power { right: -4px; top: 224px; width: 5px; height: 80px; border-radius: 0 3px 3px 0; background: linear-gradient(270deg, #34373C, #15171A); }
   .floor { position: absolute; left: 50%; bottom: 0%; transform: translateX(-50%); width: 60%; height: 26px; z-index: 1; background: radial-gradient(ellipse at center, rgba(0,0,0,0.72) 0%, transparent 72%); filter: blur(12px); }
 
-  /* ── Side rail of unit-adders ────────────────────────────────── */
-  .units { display: flex; flex-direction: column; gap: 8px; position: relative; }
+  /* ── Unit-adder buttons — fill the left column under the title ── */
+  .units { display: flex; flex-direction: column; gap: 8px; position: relative;
+    flex: 1; align-self: stretch; max-width: 360px; justify-content: space-between; }
   .unit {
     font-family: var(--sans); font-weight: 600; font-size: 0.94rem;
     color: var(--num-soft); background: rgba(245,237,216,0.05);
@@ -173,17 +176,32 @@
   }
   .unit--reset:hover { background: rgba(206,74,58,0.21); color: #F2C5BA; }
 
-  /* Playful hint that points at the buttons (animates in after load). */
-  .cta {
-    position: absolute; bottom: calc(100% + 2px); right: 2px; width: 184px;
-    text-align: right; pointer-events: none;
-    opacity: 0; transform: translateY(-12px);
-    animation: ctaIn 0.6s cubic-bezier(.2,.8,.2,1) 1.5s forwards;
+  /* Pointing finger — invites the first tap on "add Taler". Sits at the row's lower-right corner,
+     tucked into the gutter toward the phone, poking up-left in a calm two-jab-then-rest rhythm.
+     Cream silhouette + soft shadow reads on the near-black page; the single orange cuff is its only
+     accent. JS removes it on the first unit tap. */
+  .unit[data-add="taler"] { position: relative; overflow: visible; }
+  /* Centred on the Taler row — both axes (left/top 50% + translate(-50%,-50%)), so the finger sits
+     in the middle of the button it advertises. That centring offset is baked into the poke keyframes
+     so there's no jump when the loop starts. */
+  .tap-finger {
+    position: absolute; z-index: 6; left: 50%; top: 50%; width: 56px; height: 56px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;                 /* never swallows the tap it advertises */
+    opacity: 0;
+    filter: drop-shadow(0 5px 9px rgba(0,0,0,0.55));
+    animation: tapFingerIn 0.45s ease-out 1s forwards,
+               tapPoke 1.9s cubic-bezier(.34,.16,.2,1) 1.5s infinite;
   }
-  .cta__text { display: block; font-family: var(--serif); font-style: italic; font-weight: 500; font-size: 1.05rem; line-height: 1.2; color: var(--num); }
-  .cta__arrow { display: block; width: 56px; height: auto; margin: 3px 8px 0 auto; animation: ctaBob 1.7s ease-in-out 2.3s infinite; }
-  @keyframes ctaIn { to { opacity: 1; transform: translateY(0); } }
-  @keyframes ctaBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+  @keyframes tapFingerIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes tapPoke {
+    0%   { transform: translate(-50%, -50%) translate(0, 0); }
+    14%  { transform: translate(-50%, -50%) translate(-5px, -5px); }  /* first poke up-left */
+    26%  { transform: translate(-50%, -50%) translate(0, 0); }
+    40%  { transform: translate(-50%, -50%) translate(-5px, -5px); }  /* second poke */
+    52%, 100% { transform: translate(-50%, -50%) translate(0, 0); }   /* rest before the loop repeats */
+  }
+  @media (prefers-reduced-motion: reduce) { .tap-finger { animation: none; opacity: 1; } }
 
   /* Mobile/tablet (<860px): stack — text on top, rail beside the phone below. */
   @media (max-width: 860px) {
@@ -196,10 +214,16 @@
       row-gap: clamp(12px, 2.4vh, 26px);
       padding: clamp(40px, 5vh, 60px) clamp(14px, 4vw, 40px) clamp(16px, 3vh, 30px);
     }
-    .intro { max-width: none; }
-    .units { align-self: start; }
+    /* unwrap the left column so the title spans the top and the buttons sit beside the phone */
+    .left { display: contents; }
+    .intro { grid-area: intro; max-width: none; width: auto; margin-bottom: 0; }
+    /* Don't let the rail float at the top: stretch it to the phone's height and fill from the
+       bottom up (space-between), so the stack mirrors the desktop column. The bottom padding lifts
+       the lowest button off the device's outer edge to line up with the phone's inner screen. */
+    .units { grid-area: rail; align-self: stretch; flex: none; max-width: none;
+      justify-content: space-between; padding-bottom: calc(64px * var(--s, 1)); }
     .device-wrap { align-self: start; }
-    .cta { display: none; } /* no room for the left-pointing hint when the rail is beside the phone */
+    .tap-finger { display: none; } /* rail sits beside the phone here — no gutter for the hint */
   }
   @media (max-width: 760px) {
     .unit { min-width: 0; font-size: 0.8rem; padding: 7px 11px 7px 8px; gap: 7px; border-radius: 11px; }
@@ -314,6 +338,7 @@
   </header>
 
   <main class="stage">
+    <div class="left">
     <div class="intro">
       <h1 class="headline reveal d1">Bitcoin.<br><em>Zum&nbsp;Anfassen.</em></h1>
       <p class="lede reveal d2">
@@ -347,6 +372,18 @@
       <button class="unit" data-add="taler" aria-label="Taler hinzufügen">
         <svg class="unit__glyph" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="10.4" fill="#F8C247" stroke="#A86512" stroke-width="1.6"/><use href="#bb" x="6.8" y="6.8" width="14.4" height="14.4" fill="#1A2028"/></svg>
         <span class="unit__name"><span class="unit__add">add</span> Taler</span>
+        <!-- Tap hint: a hand-drawn pointing finger that pokes up-left at this row to invite the first
+             tap. Cream so it reads on the dark page; lone orange cuff (orange stays reserved). Removed
+             on the first unit tap by JS. -->
+        <svg class="tap-finger" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+          <g transform="rotate(-18 33 33)" stroke="#1A2028" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round">
+            <path fill="#F5EDD8" d="M21.2 14.3 C18.6 11.4 22.4 7.6 25.6 9.9 L40.5 23.0 C41.6 22.1 43.0 21.6 44.4 21.8 C46.9 22.1 48.2 24.3 47.6 26.4 C49.6 26.6 51.0 28.2 50.7 30.2 C52.5 30.8 53.4 32.7 52.6 34.6 C53.9 35.6 54.2 37.6 53.0 39.1 L48.6 49.3 C46.4 54.4 41.2 57.6 35.7 56.7 L31.4 56.0 C27.6 55.4 24.2 53.3 22.0 50.1 L13.6 38.0 C11.8 35.3 12.5 31.6 15.2 29.7 C17.6 28.0 20.9 28.4 22.9 30.5 L24.4 32.1 Z"/>
+            <path d="M44.3 22.0 C45.6 26.8 45.4 31.0 44.6 34.6"/>
+            <path d="M47.4 26.6 C48.6 30.5 48.4 34.0 47.6 37.4"/>
+            <path d="M50.4 30.4 C51.4 33.5 51.2 36.3 50.5 39.1"/>
+            <path fill="#F7931A" d="M22.0 50.1 C24.2 53.3 27.6 55.4 31.4 56.0 L29.0 60.4 C28.2 61.8 26.5 62.3 25.1 61.5 L16.6 56.7 C15.2 55.9 14.7 54.1 15.5 52.7 L17.6 49.0 C19.0 49.7 20.5 50.0 22.0 50.1 Z"/>
+          </g>
+        </svg>
       </button>
       <button class="unit" data-add="sat" aria-label="Satoshi hinzufügen">
         <svg class="unit__glyph" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="7.6" fill="#F5EDD8" stroke="#A86512" stroke-width="1.4"/><use href="#bb" x="8.5" y="8.5" width="11" height="11" fill="#1A2028"/></svg>
@@ -356,13 +393,7 @@
         <span class="unit__emoji" aria-hidden="true">🧹</span>
         <span class="unit__name">Leeren</span>
       </button>
-      <div class="cta" aria-hidden="true">
-        <span class="cta__text">Spam-Klick&nbsp;um<br>Geld&nbsp;hinzuzufügen</span>
-        <svg class="cta__arrow" viewBox="0 0 70 78" fill="none">
-          <path d="M40 6 C 20 26, 56 40, 40 70" stroke="var(--accent)" stroke-width="4.5" stroke-linecap="round"/>
-          <path d="M40 70 L 29 61 M40 70 L 50 62" stroke="var(--accent)" stroke-width="4.5" stroke-linecap="round"/>
-        </svg>
-      </div>
+    </div>
     </div>
 
     <div class="device-wrap reveal">
@@ -464,23 +495,25 @@
       bdWrap.style.perspective = (600 * sc) + 'px';
       bdWrap.classList.add('is-placed');
     }
-    // Breakout door is a desktop flourish; on mobile the phone sits beside the rail, so swinging
-    // out would cover the buttons — keep the door inside the phone there instead.
-    function bdMobile() { return window.matchMedia('(max-width: 860px)').matches; }
+    // The breakout-past-the-frame door swings OUT of the phone and over the left-column add-money
+    // buttons — a deliberate flourish (Emil 2026-06-16: "it's a cool effect"). It runs on every
+    // viewport now; on mobile the buttons are shrunk so a slice still peeks past the swung door, and
+    // .bd-wrap is pointer-events:none so the buttons stay tappable even where the door covers them.
     function updateDoorMode() {
       const w = pwin(); if (!w) return;
       let html; try { html = w.document.documentElement; } catch (e) { return; }
-      const mobile = bdMobile();
-      if (html) html.classList.toggle('door-inline', mobile); // mobile: re-show the in-iframe door
-      bdWrap.style.display = mobile ? 'none' : '';            // breakout only on desktop
-      if (mobile) deviceWrap.classList.remove('door-open');
-      else { placeDoor(); syncDoor(); }
+      if (html) html.classList.remove('door-inline'); // hide the in-iframe door — breakout overlay owns the swing
+      bdWrap.style.display = '';                       // breakout on all viewports
+      placeDoor(); syncDoor();
     }
     function syncDoor() {
-      if (bdMobile()) { deviceWrap.classList.remove('door-open'); return; }
       const w = pwin(); if (!w) return;
       let phone; try { phone = w.document.querySelector('.phone'); } catch (e) { return; }
-      deviceWrap.classList.toggle('door-open', !!phone && phone.getAttribute('data-mode') === 'vault-open');
+      // The breakout door is a page-layer overlay pinned over the phone, so it doesn't slide away
+      // with the room. Hide it whenever we're not on the Bank room, else it floats over Bildung/Bargeld.
+      const onBank = !!phone && phone.getAttribute('data-room') === 'bank';
+      bdWrap.style.display = onBank ? '' : 'none';
+      deviceWrap.classList.toggle('door-open', onBank && phone.getAttribute('data-mode') === 'vault-open');
     }
     (function watchVault() {
       let tries = 0;
@@ -490,30 +523,25 @@
         if (phone) {
           clearInterval(t);
           updateDoorMode();
-          new MutationObserver(syncDoor).observe(phone, { attributes: true, attributeFilter: ['data-mode'] });
+          new MutationObserver(syncDoor).observe(phone, { attributes: true, attributeFilter: ['data-mode', 'data-room'] });
         } else if (++tries > 60) clearInterval(t);
       }, 100);
     })();
 
-    // Colorful starting mix: 2 Bitcoin medals + 1 Barren + 1 Nugget (= 2110 Taler), plus 3 Satoshi.
-    // Build the pile while the vault is shut, then swing the real door open — the door is the reveal.
-    function startMix() {
-      const w = pwin();
-      if (!w || typeof w.setPreviewCoins !== 'function') return false;
-      try { if (w.document.readyState !== 'complete') return false; } catch (e) { return false; }
-      call('setPreviewCoins', 2110);
-      call('addSatoshiPiece'); call('addSatoshiPiece'); call('addSatoshiPiece');
-      return true;
-    }
+    // The vault starts CLOSED and EMPTY on every visit — no auto-open, and any persisted demo balance
+    // is cleared behind the shut door — so the pointing finger's first tap on "add Taler" drops the
+    // very first coin into an empty chamber and the "tap → it grows" mechanic reads clearly.
+    // (Zufällig fills a rich pile on demand.)
     setTimeout(function () {
       let tries = 0;
       const poll = setInterval(() => {
-        if (startMix()) {
-          clearInterval(poll);
-          setTimeout(() => call('openVault'), 720); // door swings open on the full chamber
-        } else if (++tries > 45) { clearInterval(poll); }
+        const w = pwin();
+        let ready = false;
+        try { ready = !!w && typeof w.setPreviewCoins === 'function' && w.document.readyState === 'complete'; } catch (e) {}
+        if (ready) { clearInterval(poll); call('setPreviewCoins', 0); }
+        else if (++tries > 45) clearInterval(poll);
       }, 160);
-    }, 450);
+    }, 300);
 
     // Zufällig — REPLACE the vault with a fresh random mix (a demo of how a pile can look).
     function randomMix() {
@@ -533,6 +561,7 @@
                   zufaellig: randomMix, reset: () => call('setPreviewCoins', 0) };
     document.querySelectorAll('.unit').forEach((b) => {
       b.addEventListener('click', () => {
+        document.querySelector('.tap-finger')?.remove(); // the hint has done its job on the first tap
         b.classList.remove('flash'); void b.offsetWidth; b.classList.add('flash');
         call('openVault');
         (ADD[b.dataset.add] || (() => {}))();
