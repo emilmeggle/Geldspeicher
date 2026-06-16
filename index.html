@@ -1,0 +1,590 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Geldspeicher — Bitcoin zum Anfassen</title>
+<meta name="description" content="Eine Design-Studie für eine deutsche Bitcoin-App. Kein Chart, sondern ein Geldspeicher, der sich sichtbar füllt. Live und interaktiv.">
+<link rel="icon" href="design/logo.png" type="image/png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --night:    #16241E;
+    --night-2:  #0B120F;
+    --fir-far:  #2E4A3A;
+    --fir-mid:  #1F3829;
+    --fir-near: #112018;
+    --num:      #F5EDD8;
+    --num-soft: rgba(245,237,216,0.72);
+    --muted:    rgba(245,237,216,0.44);
+    --accent:   #F7931A;
+    --glow:     rgba(247,147,26,0.26);
+    --serif: "Newsreader", Georgia, "Times New Roman", serif;
+    --sans: "Hanken Grotesk", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --s: 0.6; /* device scale — refined by JS */
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    min-height: 100svh;
+    background: var(--night-2);
+    color: var(--num);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  /* ── Black Forest clearing ───────────────────────────────────── */
+  .forest { position: fixed; inset: 0; z-index: 0; overflow: hidden; }
+  .forest__sky { position: absolute; inset: 0; background: radial-gradient(130% 90% at 50% -8%, #2A4034 0%, #18271F 46%, #0B120F 100%); }
+  .forest__glow { position: absolute; inset: 0; background: radial-gradient(40% 44% at 50% 52%, var(--glow) 0%, transparent 62%), radial-gradient(64% 52% at 50% 18%, rgba(150,190,200,0.06) 0%, transparent 60%); }
+  .forest__firs { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .mist { position: absolute; left: -5%; width: 110%; height: 190px; background: radial-gradient(60% 100% at 50% 50%, rgba(190,212,205,0.07), transparent 72%); filter: blur(6px); pointer-events: none; }
+  .mist--1 { bottom: 30%; } .mist--2 { bottom: 6%; opacity: 0.7; }
+  .vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(125% 105% at 50% 46%, transparent 56%, rgba(4,9,7,0.6) 100%); }
+  .grain { position: absolute; inset: 0; pointer-events: none; opacity: 0.4; mix-blend-mode: overlay; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.45'/></svg>"); }
+  .motes { position: absolute; inset: 0; pointer-events: none; }
+  .mote { position: absolute; width: 3px; height: 3px; border-radius: 999px; background: var(--accent); box-shadow: 0 0 7px 2px rgba(247,147,26,0.5); opacity: 0; animation: drift linear infinite; }
+  @keyframes drift { 0% { transform: translate(0,0) scale(0.7); opacity: 0; } 12% { opacity: 0.85; } 80% { opacity: 0.5; } 100% { transform: translate(var(--mx, 16px), -140px) scale(1); opacity: 0; } }
+
+  /* ── Top bar — design-studie left, links right ───────────────── */
+  .top {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 6;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px clamp(16px, 4vw, 44px); gap: 14px;
+  }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 9px;
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--muted); white-space: nowrap;
+  }
+  .eyebrow::before { content: ""; width: 7px; height: 7px; border-radius: 999px; background: var(--accent); box-shadow: 0 0 9px 1px var(--accent); }
+  .top__links { display: flex; align-items: center; gap: 20px; }
+  .top__links a { color: var(--num-soft); text-decoration: none; font-size: 0.86rem; font-weight: 600; transition: color 0.18s; white-space: nowrap; }
+  .top__links a:hover { color: var(--num); }
+
+  /* ── Stage ───────────────────────────────────────────────────── */
+  /* Desktop: title (top) over the buttons (pushed to the bottom) on the left, tall phone on the right. */
+  .stage {
+    position: relative; z-index: 2; min-height: 100svh;
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-template-rows: auto auto;
+    grid-template-areas: "intro phone" "rail phone";
+    align-content: center; justify-content: center;
+    column-gap: clamp(14px, 1.8vw, 30px);
+    row-gap: clamp(14px, 2.4vh, 28px);
+    padding: clamp(24px, 4vh, 50px) clamp(20px, 3.4vw, 56px);
+    text-align: left;
+  }
+  .intro { grid-area: intro; align-self: start; width: 100%; max-width: 440px; }
+  .units { grid-area: rail; align-self: end; justify-self: end; } /* buttons hug the phone, bottoms aligned with it */
+  .device-wrap { grid-area: phone; align-self: center; justify-self: center; }
+  .headline {
+    font-family: var(--serif); font-weight: 500;
+    font-size: clamp(1.95rem, 4.6vw, 3.1rem); line-height: 1.08; letter-spacing: -0.01em;
+    color: var(--num); text-shadow: 0 2px 30px rgba(0,0,0,0.4);
+  }
+  .headline em { font-style: normal; color: var(--accent); }
+  .lede {
+    max-width: 62ch; margin: 9px 0 0;
+    font-size: clamp(0.86rem, 1vw, 0.99rem); line-height: 1.5; color: var(--num-soft); font-weight: 400;
+  }
+
+  /* device — iPhone body wrapping the live screen */
+  .device-wrap { position: relative; z-index: 2; width: calc(419px * var(--s)); height: calc(878px * var(--s)); }
+
+  /* ── Breakout vault door (page layer, over the phone) ───────────
+     Mirrors the in-iframe door exactly; JS sets .bd-wrap left/top/width/height/perspective. */
+  .bd-wrap { position: absolute; z-index: 3; opacity: 0; transition: opacity 0.25s ease; pointer-events: none; }
+  .bd-wrap.is-placed { opacity: 1; }
+  .breakout-door {
+    position: absolute; inset: 0; transform-style: preserve-3d;
+    transform-origin: 15.79% 41.18%;            /* = 53.67px / 140px on the 340px door */
+    transform: rotateY(0deg);
+    transition: transform 460ms cubic-bezier(.22,.9,.28,1);
+  }
+  .device-wrap.door-open .breakout-door { transform: rotateY(-180deg); transition-delay: 300ms; }
+  .bd-face { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .bd-face--back { transform: rotateY(180deg); }
+  /* choreography copied from bank.css (scoped) so the swing keeps its wheel-spin + bolt-slide */
+  .breakout-door .vault-wheel { transform-box: view-box; transform-origin: 120px 120px; }
+  .device-wrap.door-open .breakout-door .vault-wheel { animation: bdWheelOpen 220ms cubic-bezier(.16,.92,.22,1) both; }
+  @keyframes bdWheelOpen { from { transform: rotate(0deg); } to { transform: rotate(1440deg); } }
+  .breakout-door .vault-bolt { transform-box: view-box; transition: none; }
+  .device-wrap.door-open .breakout-door .vault-bolt { transition: transform 150ms cubic-bezier(.2,.8,.2,1) 170ms; }
+  .device-wrap.door-open .breakout-door .vault-bolt--top { transform: translateY(15px); }
+  .device-wrap.door-open .breakout-door .vault-bolt--bottom { transform: translateY(-15px); }
+  .device-wrap.door-open .breakout-door .vault-bolt--left { transform: translateX(15px); }
+  .device-wrap.door-open .breakout-door .vault-bolt--right { transform: translateX(-15px); }
+  .breakout-door .vault-door-rim { transition: stroke-width 460ms cubic-bezier(.22,.9,.28,1); }
+  .device-wrap.door-open .breakout-door .vault-door-rim { stroke-width: 6; }
+  @media (prefers-reduced-motion: reduce) { .breakout-door, .device-wrap.door-open .breakout-door .vault-wheel { transition-duration: 0.01ms; animation-duration: 0.01ms; } }
+
+  .device {
+    position: absolute; top: 0; left: 0; width: 419px; height: 878px;
+    transform: scale(var(--s)); transform-origin: top left;
+    padding: 13px; border-radius: 60px;
+    background: linear-gradient(150deg, #34373C 0%, #1E2125 38%, #131518 72%, #2A2D32 100%);
+    box-shadow: inset 0 0 0 1.5px rgba(255,255,255,0.12), inset 0 0 0 7px rgba(0,0,0,0.4), 0 36px 70px -18px rgba(0,0,0,0.82), 0 12px 26px rgba(0,0,0,0.55);
+  }
+  .device__screen { width: 393px; height: 852px; border: 0; display: block; background: transparent; border-radius: 48px; position: relative; z-index: 1; }
+  .device__btn { position: absolute; z-index: 0; background: linear-gradient(90deg, #34373C, #15171A); }
+  .device__btn--mute  { left: -3px; top: 156px; width: 4px; height: 26px; border-radius: 3px 0 0 3px; }
+  .device__btn--vup   { left: -4px; top: 202px; width: 5px; height: 54px; border-radius: 3px 0 0 3px; }
+  .device__btn--vdown { left: -4px; top: 270px; width: 5px; height: 54px; border-radius: 3px 0 0 3px; }
+  .device__btn--power { right: -4px; top: 224px; width: 5px; height: 80px; border-radius: 0 3px 3px 0; background: linear-gradient(270deg, #34373C, #15171A); }
+  .floor { position: absolute; left: 50%; bottom: 0%; transform: translateX(-50%); width: 60%; height: 26px; z-index: 1; background: radial-gradient(ellipse at center, rgba(0,0,0,0.72) 0%, transparent 72%); filter: blur(12px); }
+
+  /* ── Side rail of unit-adders ────────────────────────────────── */
+  .units { display: flex; flex-direction: column; gap: 6px; }
+  .unit {
+    font-family: var(--sans); font-weight: 600; font-size: 0.77rem;
+    color: var(--num-soft); background: rgba(245,237,216,0.05);
+    border: 1px solid rgba(245,237,216,0.12); border-radius: 11px;
+    padding: 6px 12px 6px 7px; cursor: pointer; white-space: nowrap;
+    display: flex; align-items: center; gap: 8px; width: 100%; min-width: 148px;
+    transition: color 0.16s, background 0.16s, transform 0.1s, border-color 0.16s;
+  }
+  .unit:hover { color: var(--num); background: rgba(245,237,216,0.09); transform: translateX(-2px); }
+  .unit:active { transform: translateX(1px); }
+  .unit__glyph { width: 21px; height: 21px; flex: none; display: block; }
+  .unit__emoji { width: 21px; flex: none; text-align: center; font-size: 15px; line-height: 1; }
+  .unit__name { flex: 1; text-align: left; }
+  .unit__add { color: var(--muted); font-weight: 600; }
+  .unit:hover .unit__add { color: var(--num-soft); }
+  .unit.flash { animation: unitflash 0.45s ease; }
+  @keyframes unitflash { 0%,100%{ background: rgba(245,237,216,0.05);} 35%{ background: rgba(247,147,26,0.22); border-color: var(--accent);} }
+
+  /* Zufällig — the "show me" button at the top, brighter so it invites the first click. */
+  .unit--random {
+    background: rgba(245,237,216,0.16); border-color: rgba(245,237,216,0.3);
+    color: var(--num); font-weight: 700; margin-bottom: 8px;
+  }
+  .unit--random:hover { background: rgba(245,237,216,0.23); }
+  /* Leeren — clear action, dim-red (not greyed out). */
+  .unit--reset {
+    background: rgba(206,74,58,0.13); border-color: rgba(214,92,72,0.34);
+    color: #E4A99C; margin-top: 8px;
+  }
+  .unit--reset:hover { background: rgba(206,74,58,0.21); color: #F2C5BA; }
+
+  /* Mobile/tablet (<860px): stack — text on top, rail beside the phone below. */
+  @media (max-width: 860px) {
+    .stage {
+      grid-template-columns: auto 1fr;
+      grid-template-rows: auto auto;
+      grid-template-areas: "intro intro" "rail phone";
+      align-items: start;
+      column-gap: clamp(8px, 2vw, 18px);
+      row-gap: clamp(12px, 2.4vh, 26px);
+      padding: clamp(40px, 5vh, 60px) clamp(14px, 4vw, 40px) clamp(16px, 3vh, 30px);
+    }
+    .intro { max-width: none; }
+    .units { align-self: start; }
+    .device-wrap { align-self: start; }
+  }
+  @media (max-width: 760px) {
+    .unit { min-width: 0; font-size: 0.72rem; padding: 5px 9px 5px 6px; gap: 6px; border-radius: 10px; }
+    .unit__glyph { width: 19px; height: 19px; }
+    .unit__emoji { width: 19px; font-size: 14px; }
+  }
+
+  /* ── Feedback bubble + popup ─────────────────────────────────── */
+  .fb { position: fixed; right: clamp(16px, 3vw, 30px); bottom: clamp(16px, 3vh, 28px); z-index: 80; }
+  .fb__bubble {
+    width: 56px; height: 56px; border-radius: 999px; padding: 0; cursor: pointer;
+    border: 2px solid rgba(245,237,216,0.2); background: #14201B; overflow: hidden;
+    box-shadow: 0 10px 26px -8px rgba(0,0,0,0.7), 0 0 0 0 rgba(247,147,26,0.4);
+    transition: transform 0.18s, box-shadow 0.2s, opacity 0.2s; animation: fbpulse 3.4s ease-out infinite;
+  }
+  .fb__bubble img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .fb__bubble:hover { transform: scale(1.06); }
+  @keyframes fbpulse { 0%{ box-shadow: 0 10px 26px -8px rgba(0,0,0,0.7), 0 0 0 0 rgba(247,147,26,0.45);} 70%{ box-shadow: 0 10px 26px -8px rgba(0,0,0,0.7), 0 0 0 12px rgba(247,147,26,0);} 100%{ box-shadow: 0 10px 26px -8px rgba(0,0,0,0.7), 0 0 0 0 rgba(247,147,26,0);} }
+  .fb.is-open .fb__bubble { opacity: 0; transform: scale(0.6); pointer-events: none; }
+
+  .fb__card {
+    position: absolute; right: 0; bottom: 0; width: min(330px, calc(100vw - 32px));
+    background: rgba(18,26,22,0.92); backdrop-filter: blur(20px) saturate(140%); -webkit-backdrop-filter: blur(20px) saturate(140%);
+    border: 1px solid rgba(245,237,216,0.14); border-radius: 22px; padding: 18px;
+    box-shadow: 0 28px 60px -18px rgba(0,0,0,0.85);
+    transform-origin: bottom right; transform: scale(0.82) translateY(14px); opacity: 0; visibility: hidden;
+    transition: transform 0.3s cubic-bezier(.2,.8,.2,1), opacity 0.26s ease, visibility 0.3s;
+  }
+  .fb.is-open .fb__card { transform: none; opacity: 1; visibility: visible; }
+  .fb__close { position: absolute; top: 12px; right: 14px; border: 0; background: transparent; color: var(--muted); font-size: 21px; line-height: 1; cursor: pointer; }
+  .fb__close:hover { color: var(--num); }
+  .fb__head { display: flex; align-items: center; gap: 11px; margin-bottom: 13px; }
+  .fb__head img { width: 42px; height: 42px; border-radius: 999px; object-fit: cover; border: 2px solid rgba(245,237,216,0.2); }
+  .fb__head b { font-family: var(--serif); font-weight: 600; font-size: 1.04rem; display: block; }
+  .fb__head span { color: var(--muted); font-size: 0.78rem; }
+  .fb__msg { color: var(--num-soft); font-size: 0.92rem; line-height: 1.5; margin-bottom: 12px; }
+  .fb__text {
+    width: 100%; min-height: 84px; resize: vertical; font: inherit; font-size: 0.9rem;
+    color: var(--num); background: rgba(0,0,0,0.28); border: 1px solid rgba(245,237,216,0.14);
+    border-radius: 12px; padding: 11px 12px; margin-bottom: 12px;
+  }
+  .fb__text::placeholder { color: var(--muted); }
+  .fb__text:focus { outline: none; border-color: var(--accent); }
+  .fb__send {
+    width: 100%; border: 0; border-radius: 999px; padding: 12px; cursor: pointer;
+    font: inherit; font-weight: 700; font-size: 0.92rem; color: #1A2028; background: var(--accent);
+    box-shadow: 0 6px 18px -6px rgba(247,147,26,0.6); transition: transform 0.12s;
+  }
+  .fb__send:hover { transform: translateY(-1px); }
+
+  /* ── load reveal ─────────────────────────────────────────────── */
+  .reveal { opacity: 0; transform: translateY(14px); animation: rise 1s cubic-bezier(.2,.7,.2,1) forwards; }
+  .d1 { animation-delay: 0.06s; } .d2 { animation-delay: 0.18s; } .d3 { animation-delay: 0.32s; } .d4 { animation-delay: 0.5s; }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+  .device-wrap.reveal { animation: rise-dev 1.2s cubic-bezier(.2,.7,.2,1) forwards; animation-delay: 0.42s; }
+  @keyframes rise-dev { from { opacity: 0; transform: translateY(26px) scale(0.985); } to { opacity: 1; transform: none; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+    .reveal, .device-wrap.reveal { opacity: 1; transform: none; }
+    .mote { display: none; }
+  }
+</style>
+</head>
+<body>
+  <!-- The vault ₿ glyph (OFFICIAL_B_PATH from bank.js) — one source for headline + unit chips. -->
+  <svg width="0" height="0" aria-hidden="true" style="position:absolute"><symbol id="bb" viewBox="0 0 16 16"><path d="M5.5 13v1.25c0 .138.112.25.25.25h1a.25.25 0 0 0 .25-.25V13h.5v1.25c0 .138.112.25.25.25h1a.25.25 0 0 0 .25-.25V13h.084c1.992 0 3.416-1.033 3.416-2.82 0-1.502-1.007-2.323-2.186-2.44v-.088c.97-.242 1.683-.974 1.683-2.19C11.997 3.93 10.847 3 9.092 3H9V1.75a.25.25 0 0 0-.25-.25h-1a.25.25 0 0 0-.25.25V3h-.573V1.75a.25.25 0 0 0-.25-.25H5.75a.25.25 0 0 0-.25.25V3l-1.998.011a.25.25 0 0 0-.25.25v.989c0 .137.11.25.248.25l.755-.005a.75.75 0 0 1 .745.75v5.505a.75.75 0 0 1-.75.75l-.748.011a.25.25 0 0 0-.25.25v1c0 .138.112.25.25.25L5.5 13zm1.427-8.513h1.719c.906 0 1.438.498 1.438 1.312 0 .871-.575 1.362-1.877 1.362h-1.28V4.487zm0 4.051h1.84c1.137 0 1.756.58 1.756 1.524 0 .953-.626 1.45-1.847 1.45H6.927V8.539z"/></symbol></svg>
+
+  <div class="forest" aria-hidden="true">
+    <div class="forest__sky"></div>
+    <div class="forest__glow"></div>
+    <svg class="forest__firs" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMax slice">
+      <symbol id="fir" viewBox="0 0 120 240">
+        <path d="M60 6 L72 52 L65 52 L80 96 L71 96 L88 140 L77 140 L96 186 L70 186 L70 234 L50 234 L50 186 L24 186 L43 140 L32 140 L49 96 L40 96 L55 52 L48 52 Z"/>
+      </symbol>
+      <g fill="var(--fir-far)" opacity="0.5">
+        <use href="#fir" x="40" y="560" width="92" height="184"/>
+        <use href="#fir" x="150" y="588" width="78" height="156"/>
+        <use href="#fir" x="250" y="566" width="86" height="172"/>
+        <use href="#fir" x="360" y="596" width="72" height="144"/>
+        <use href="#fir" x="980" y="592" width="74" height="148"/>
+        <use href="#fir" x="1080" y="566" width="88" height="176"/>
+        <use href="#fir" x="1196" y="588" width="78" height="156"/>
+        <use href="#fir" x="1300" y="560" width="94" height="188"/>
+      </g>
+      <g fill="var(--fir-mid)" opacity="0.92">
+        <use href="#fir" x="-20" y="540" width="150" height="320"/>
+        <use href="#fir" x="120" y="600" width="120" height="300"/>
+        <use href="#fir" x="1230" y="600" width="120" height="300"/>
+        <use href="#fir" x="1340" y="540" width="150" height="320"/>
+      </g>
+      <g fill="var(--fir-near)">
+        <use href="#fir" x="-60" y="470" width="210" height="470"/>
+        <use href="#fir" x="60" y="600" width="150" height="360"/>
+        <use href="#fir" x="1290" y="470" width="210" height="470"/>
+        <use href="#fir" x="1230" y="600" width="150" height="360"/>
+      </g>
+    </svg>
+    <div class="mist mist--1"></div>
+    <div class="mist mist--2"></div>
+    <div class="motes" id="motes"></div>
+    <div class="vignette"></div>
+    <div class="grain"></div>
+  </div>
+
+  <header class="top">
+    <p class="eyebrow reveal d1">Concept Design</p>
+    <nav class="top__links reveal d1">
+      <a id="ghLink" href="https://github.com/emilmeggle" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+      <a id="folioLink" href="https://emilmeggle.me" target="_blank" rel="noopener noreferrer">Portfolio ↗</a>
+    </nav>
+  </header>
+
+  <main class="stage">
+    <div class="intro">
+      <h1 class="headline reveal d1">Bitcoin.<br><em>Zum&nbsp;Anfassen.</em></h1>
+      <p class="lede reveal d2">
+        Ich habe dieses Wallet-Design entworfen, um Bitcoin greifbarer zu machen — denn
+        das ist es, was das Digitale schwer ersetzen kann. Daher: kein Chart, sondern
+        ein Geldspeicher, der sich sichtbar füllt.
+      </p>
+    </div>
+
+    <div class="units reveal d3" role="group" aria-label="Einheit hinzufügen">
+      <button class="unit unit--random" data-add="zufaellig" aria-label="Zufälligen Mix in den Speicher legen">
+        <span class="unit__emoji" aria-hidden="true">🔀</span>
+        <span class="unit__name">Zufällig</span>
+      </button>
+      <button class="unit" data-add="black" aria-label="Black Bitcoin hinzufügen">
+        <svg class="unit__glyph" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="10.6" fill="#2A2F38" stroke="#05070A" stroke-width="1.5"/><use href="#bb" x="6.6" y="6.6" width="14.8" height="14.8" fill="#F5EDD8"/></svg>
+        <span class="unit__name"><span class="unit__add">add</span> Black&nbsp;Bitcoin</span>
+      </button>
+      <button class="unit" data-add="btc" aria-label="Bitcoin hinzufügen">
+        <svg class="unit__glyph" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="10.6" fill="#F7931A" stroke="#B5670A" stroke-width="1.5"/><use href="#bb" x="6.6" y="6.6" width="14.8" height="14.8" fill="#F5EDD8"/></svg>
+        <span class="unit__name"><span class="unit__add">add</span> Bitcoin</span>
+      </button>
+      <button class="unit" data-add="barren" aria-label="Barren hinzufügen">
+        <svg class="unit__glyph" viewBox="0 0 28 28" aria-hidden="true"><g transform="rotate(-13 14 14)"><rect x="3.4" y="9.6" width="21.2" height="9.2" rx="1.6" fill="#E0A93A" stroke="#8A6313" stroke-width="1.3"/><path d="M4.6 9.7 H23.4 L24.6 12.1 H3.4 Z" fill="#F3C24B"/><use href="#bb" x="9.2" y="9.4" width="9.6" height="9.6" fill="#1A2028"/></g></svg>
+        <span class="unit__name"><span class="unit__add">add</span> Barren</span>
+      </button>
+      <button class="unit" data-add="nugget" aria-label="Nugget hinzufügen">
+        <svg class="unit__glyph" viewBox="0 0 28 28" aria-hidden="true"><path d="M6.4 12.6 Q5 8.4 9.4 7.1 Q12.4 4.1 17.4 6.5 Q22.8 7.7 21.5 13.1 Q22.6 18.7 17.5 20.8 Q11.8 22.9 8.1 19.7 Q4.5 17.3 6.4 12.6 Z" fill="#E5A93C" stroke="#8A6313" stroke-width="1.3"/><use href="#bb" x="7.4" y="7.6" width="13.2" height="13.2" fill="#1A2028"/></svg>
+        <span class="unit__name"><span class="unit__add">add</span> Nugget</span>
+      </button>
+      <button class="unit" data-add="taler" aria-label="Taler hinzufügen">
+        <svg class="unit__glyph" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="10.4" fill="#F8C247" stroke="#A86512" stroke-width="1.6"/><use href="#bb" x="6.8" y="6.8" width="14.4" height="14.4" fill="#1A2028"/></svg>
+        <span class="unit__name"><span class="unit__add">add</span> Taler</span>
+      </button>
+      <button class="unit" data-add="sat" aria-label="Satoshi hinzufügen">
+        <svg class="unit__glyph" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="7.6" fill="#F5EDD8" stroke="#A86512" stroke-width="1.4"/><use href="#bb" x="8.5" y="8.5" width="11" height="11" fill="#1A2028"/></svg>
+        <span class="unit__name"><span class="unit__add">add</span> Satoshi</span>
+      </button>
+      <button class="unit unit--reset" data-add="reset" aria-label="Speicher leeren">
+        <span class="unit__emoji" aria-hidden="true">🧹</span>
+        <span class="unit__name">Leeren</span>
+      </button>
+    </div>
+
+    <div class="device-wrap reveal">
+        <div class="floor"></div>
+        <div class="device">
+          <span class="device__btn device__btn--mute"></span>
+          <span class="device__btn device__btn--vup"></span>
+          <span class="device__btn device__btn--vdown"></span>
+          <span class="device__btn device__btn--power"></span>
+          <iframe id="phone" class="device__screen" title="Geldspeicher — Live-Vorschau" src="design/preview.html?embed" scrolling="no" loading="eager"></iframe>
+        </div>
+        <!-- Breakout door: a pixel-exact copy of the in-iframe vault door, rendered in the page
+             layer (over the phone) so it can swing out past the frame. Positioned/sized by JS to
+             overlay the real vault; the in-iframe door is hidden in embed so there is no double. -->
+        <div class="bd-wrap" aria-hidden="true">
+          <div class="breakout-door">
+            <svg class="bd-face bd-face--front" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g class="vault-door">
+                <circle class="vault-door-rim" cx="120" cy="120" r="74" fill="#3A4452" stroke="#1A2028" stroke-width="3"/>
+                <circle cx="120" cy="120" r="68" fill="#5E6973" stroke="#1A2028" stroke-width="2"/>
+                <g class="vault-bolts" stroke="#1A2028" stroke-width="7" stroke-linecap="round">
+                  <line class="vault-bolt vault-bolt--top" x1="120" y1="78" x2="120" y2="103"/>
+                  <line class="vault-bolt vault-bolt--bottom" x1="120" y1="137" x2="120" y2="162"/>
+                  <line class="vault-bolt vault-bolt--left" x1="78" y1="120" x2="103" y2="120"/>
+                  <line class="vault-bolt vault-bolt--right" x1="137" y1="120" x2="162" y2="120"/>
+                </g>
+                <g class="vault-bolt-caps" fill="#1A2028">
+                  <circle cx="120" cy="78" r="6"/><circle cx="120" cy="162" r="6"/>
+                  <circle cx="78" cy="120" r="6"/><circle cx="162" cy="120" r="6"/>
+                </g>
+                <g class="vault-wheel">
+                  <circle cx="120" cy="120" r="20" fill="#8E99A4" stroke="#1A2028" stroke-width="3"/>
+                  <circle cx="120" cy="120" r="6" fill="#1A2028"/>
+                  <g stroke="#1A2028" stroke-width="3" stroke-linecap="round">
+                    <line x1="120" y1="100" x2="120" y2="108"/><line x1="120" y1="132" x2="120" y2="140"/>
+                    <line x1="100" y1="120" x2="108" y2="120"/><line x1="132" y1="120" x2="140" y2="120"/>
+                  </g>
+                </g>
+                <path d="M 64 82 A 68 68 0 0 1 100 56" stroke="#D8E0E8" stroke-width="3" stroke-linecap="round" fill="none"/>
+                <g stroke="#1A2028" stroke-width="1.2" opacity="0.45" stroke-linecap="round">
+                  <line x1="135" y1="170" x2="160" y2="145"/><line x1="145" y1="180" x2="170" y2="155"/>
+                  <line x1="155" y1="180" x2="180" y2="155"/><line x1="160" y1="190" x2="180" y2="170"/>
+                </g>
+              </g>
+            </svg>
+            <svg class="bd-face bd-face--back" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g class="vault-door-inner">
+                <circle cx="120" cy="120" r="74" fill="#3A4452" stroke="#1A2028" stroke-width="3"/>
+                <circle cx="120" cy="120" r="68" fill="#5E6973" stroke="#1A2028" stroke-width="2"/>
+                <path d="M 140 56 A 68 68 0 0 1 176 82" stroke="#D8E0E8" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.45"/>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+  </main>
+
+  <!-- Feedback bubble -->
+  <div class="fb" id="fb">
+    <button class="fb__bubble" id="fbBubble" aria-label="Feedback geben" aria-expanded="false">
+      <img src="avatar.jpeg" alt="Avatar">
+    </button>
+    <div class="fb__card" role="dialog" aria-label="Feedback" aria-modal="false">
+      <button class="fb__close" id="fbClose" aria-label="Schließen">&times;</button>
+      <div class="fb__head">
+        <img src="avatar.jpeg" alt="">
+        <div><b>Emil</b><span>Design dieser Studie</span></div>
+      </div>
+      <p class="fb__msg">Was denkst du? Feedback, eine Idee oder Lust, mitzubauen?</p>
+      <textarea class="fb__text" id="fbText" placeholder="Deine Nachricht …"></textarea>
+      <button class="fb__send" id="fbSend">Senden</button>
+    </div>
+  </div>
+
+  <script>
+    // ── Drive the live phone (same-origin) ──
+    const frame = document.getElementById('phone');
+    function pwin() { try { return frame.contentWindow; } catch (e) { return null; } }
+    function call(fn, ...args) { const w = pwin(); if (w && typeof w[fn] === 'function') { try { w[fn](...args); } catch (e) {} } }
+
+    // ── Breakout vault door: place the page-layer door exactly over the in-iframe vault,
+    //    and mirror its open/closed state so it swings out past the phone frame. ──
+    const bdWrap = document.querySelector('.bd-wrap');
+    const deviceWrap = document.querySelector('.device-wrap');
+    function placeDoor() {
+      const w = pwin(); if (!w) return;
+      // read the vault STAGE (same 340×340 box as the door, but not display:none-hidden)
+      let stage; try { stage = w.document.querySelector('.vault-stage'); } catch (e) { return; }
+      if (!stage) return;
+      const dr = stage.getBoundingClientRect();           // iframe-content coords
+      const ifr = frame.getBoundingClientRect();          // iframe's visual rect in the page
+      const sc = ifr.width / (frame.clientWidth || 393);  // effective scale (= --s)
+      const pr = deviceWrap.getBoundingClientRect();      // offset parent
+      if (!(dr.width > 0) || !(sc > 0)) return;
+      bdWrap.style.left = (ifr.left - pr.left + dr.left * sc) + 'px';
+      bdWrap.style.top = (ifr.top - pr.top + dr.top * sc) + 'px';
+      bdWrap.style.width = (dr.width * sc) + 'px';
+      bdWrap.style.height = (dr.height * sc) + 'px';
+      bdWrap.style.perspective = (600 * sc) + 'px';
+      bdWrap.classList.add('is-placed');
+    }
+    // Breakout door is a desktop flourish; on mobile the phone sits beside the rail, so swinging
+    // out would cover the buttons — keep the door inside the phone there instead.
+    function bdMobile() { return window.matchMedia('(max-width: 860px)').matches; }
+    function updateDoorMode() {
+      const w = pwin(); if (!w) return;
+      let html; try { html = w.document.documentElement; } catch (e) { return; }
+      const mobile = bdMobile();
+      if (html) html.classList.toggle('door-inline', mobile); // mobile: re-show the in-iframe door
+      bdWrap.style.display = mobile ? 'none' : '';            // breakout only on desktop
+      if (mobile) deviceWrap.classList.remove('door-open');
+      else { placeDoor(); syncDoor(); }
+    }
+    function syncDoor() {
+      if (bdMobile()) { deviceWrap.classList.remove('door-open'); return; }
+      const w = pwin(); if (!w) return;
+      let phone; try { phone = w.document.querySelector('.phone'); } catch (e) { return; }
+      deviceWrap.classList.toggle('door-open', !!phone && phone.getAttribute('data-mode') === 'vault-open');
+    }
+    (function watchVault() {
+      let tries = 0;
+      const t = setInterval(() => {
+        const w = pwin();
+        let phone = null; try { phone = w && w.document.querySelector('.phone'); } catch (e) {}
+        if (phone) {
+          clearInterval(t);
+          updateDoorMode();
+          new MutationObserver(syncDoor).observe(phone, { attributes: true, attributeFilter: ['data-mode'] });
+        } else if (++tries > 60) clearInterval(t);
+      }, 100);
+    })();
+
+    // Colorful starting mix: 2 Bitcoin medals + 1 Barren + 1 Nugget (= 2110 Taler), plus 3 Satoshi.
+    // Build the pile while the vault is shut, then swing the real door open — the door is the reveal.
+    function startMix() {
+      const w = pwin();
+      if (!w || typeof w.setPreviewCoins !== 'function') return false;
+      try { if (w.document.readyState !== 'complete') return false; } catch (e) { return false; }
+      call('setPreviewCoins', 2110);
+      call('addSatoshiPiece'); call('addSatoshiPiece'); call('addSatoshiPiece');
+      return true;
+    }
+    setTimeout(function () {
+      let tries = 0;
+      const poll = setInterval(() => {
+        if (startMix()) {
+          clearInterval(poll);
+          setTimeout(() => call('openVault'), 720); // door swings open on the full chamber
+        } else if (++tries > 45) { clearInterval(poll); }
+      }, 160);
+    }, 450);
+
+    // Zufällig — REPLACE the vault with a fresh random mix (a demo of how a pile can look).
+    function randomMix() {
+      const rnd = (n) => Math.floor(Math.random() * (n + 1));
+      const medals = Math.random() < 0.45 ? rnd(1) : 0;       // a Bitcoin medal now and then
+      const barren = rnd(6), nugget = rnd(9), taler = rnd(9);
+      let talerTotal = medals * 1000 + barren * 100 + nugget * 10 + taler;
+      if (talerTotal === 0) talerTotal = 1 + rnd(8);           // never empty
+      call('setPreviewCoins', talerTotal);                     // replaces (canonical respawn)
+      const sats = rnd(7);
+      for (let i = 0; i < sats; i++) call('addSatoshiPiece');  // a little loose change
+    }
+
+    // Add individual units. Maps to the canonical ladder (1 Taler = 100k sats).
+    const ADD = { sat: () => call('addSatoshiPiece'), taler: () => call('buyCoins', 1), nugget: () => call('buyCoins', 10),
+                  barren: () => call('buyCoins', 100), btc: () => call('buyCoins', 1000), black: () => call('buyCoins', 10000),
+                  zufaellig: randomMix, reset: () => call('setPreviewCoins', 0) };
+    document.querySelectorAll('.unit').forEach((b) => {
+      b.addEventListener('click', () => {
+        b.classList.remove('flash'); void b.offsetWidth; b.classList.add('flash');
+        call('openVault');
+        (ADD[b.dataset.add] || (() => {}))();
+      });
+    });
+
+    // ── Fit the phone ──
+    //  Desktop (two-column): the phone fills the viewport height; the left column (text + rail)
+    //  takes the rest of the width. Mobile (stacked): text on top, phone width-bound beside the rail.
+    function fit() {
+      const stage = document.querySelector('.stage');
+      const cs = getComputedStyle(stage);
+      const padT = parseFloat(cs.paddingTop) || 0, padB = parseFloat(cs.paddingBottom) || 0;
+      const padL = parseFloat(cs.paddingLeft) || 0, padR = parseFloat(cs.paddingRight) || 0;
+      const colGap = parseFloat(cs.columnGap) || 24;
+      const rowGap = parseFloat(cs.rowGap) || 16;
+      const railW = document.querySelector('.units').offsetWidth;
+      const intro = document.querySelector('.intro');
+      const introW = intro.offsetWidth, introH = intro.offsetHeight;
+      const stacked = window.matchMedia('(max-width: 860px)').matches;
+      let s;
+      if (stacked) {
+        const availW = window.innerWidth - padL - padR - railW - colGap;
+        const availH = window.innerHeight - padT - padB - introH - rowGap;
+        s = Math.min(availW / 419, availH / 878);
+      } else {
+        const availH = window.innerHeight - padT - padB;                          // phone fills height
+        const leftW = Math.max(introW, railW);                                    // title over rail = one column
+        const availW = window.innerWidth - padL - padR - leftW - colGap;
+        s = Math.min(availH / 878, availW / 419);
+      }
+      if (!(s > 0)) return; // transient pre-layout measurement — skip
+      s = Math.max(0.4, Math.min(s, 1.0));
+      document.documentElement.style.setProperty('--s', s.toFixed(3));
+      updateDoorMode(); // re-place/toggle the breakout door (position derives from --s + iframe rect)
+    }
+    fit();
+    requestAnimationFrame(fit);
+    window.addEventListener('resize', fit);
+    window.addEventListener('load', fit);
+    frame.addEventListener('load', fit);
+    [150, 450, 900].forEach((t) => setTimeout(fit, t)); // settle after layout + webfonts
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+
+    // ── Feedback bubble ──
+    const fb = document.getElementById('fb');
+    const fbBubble = document.getElementById('fbBubble');
+    document.getElementById('fbBubble').addEventListener('click', () => { fb.classList.add('is-open'); fbBubble.setAttribute('aria-expanded', 'true'); document.getElementById('fbText').focus(); });
+    document.getElementById('fbClose').addEventListener('click', () => { fb.classList.remove('is-open'); fbBubble.setAttribute('aria-expanded', 'false'); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { fb.classList.remove('is-open'); fbBubble.setAttribute('aria-expanded', 'false'); } });
+    document.getElementById('fbSend').addEventListener('click', () => {
+      const msg = document.getElementById('fbText').value.trim();
+      const body = encodeURIComponent(msg || '');
+      window.location.href = 'mailto:emilmeggle@gmail.com?subject=' + encodeURIComponent('Geldspeicher — Feedback') + '&body=' + body;
+    });
+
+    // ── Embers ──
+    (function () {
+      const motes = document.getElementById('motes');
+      if (!motes || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      for (let i = 0; i < 7; i++) {
+        const m = document.createElement('span');
+        m.className = 'mote';
+        m.style.left = ((i * 137) % 92 + 4) + '%';
+        m.style.bottom = (8 + (i * 17) % 40) + '%';
+        m.style.setProperty('--mx', ((i % 2 ? 1 : -1) * (10 + (i * 7) % 24)) + 'px');
+        m.style.animationDuration = (12 + (i * 5) % 10) + 's';
+        m.style.animationDelay = (i * 1.6) + 's';
+        motes.appendChild(m);
+      }
+    })();
+  </script>
+</body>
+</html>

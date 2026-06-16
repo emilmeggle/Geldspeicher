@@ -1,0 +1,102 @@
+    /* Bildung room — suppress village silhouettes (they read "open valley", not "Black Forest") */
+    [data-room="bildung"] .village-left,
+    [data-room="bildung"] .village-right {
+      display: none;
+    }
+    /* Cooler, deeper sky makes the red dome + orange disc pop harder */
+    [data-room="bildung"] .phone-sky {
+      background-color: #6A8FA8;
+    }
+
+    /* Bildung path — single-screen scene, everything visible at once */
+    .room--bildung {
+      padding: 0;
+      align-items: stretch;
+      overflow: hidden;
+    }
+    .bildung-scene {
+      width: 100%;
+      height: auto;
+      display: block;
+      flex-shrink: 0;
+    }
+    .bildung-sign {
+      cursor: pointer;
+    }
+    .bildung-sign-body {
+      transition: translate 80ms ease;
+      translate: 0 0;
+    }
+    .bildung-sign-shadow {
+      transition: opacity 80ms ease;
+    }
+    .bildung-sign:active .bildung-sign-body {
+      translate: 0 4px;
+    }
+    .bildung-sign:active .bildung-sign-shadow {
+      opacity: 0.25;
+    }
+    /* Suppress all focus/active outlines on interactive scene elements
+       (signs, gate, newspaper). Click-tap visual feedback is the :active translate. */
+    .bildung-sign,
+    .bildung-sign:focus,
+    .bildung-sign:focus-visible,
+    .bildung-sign:focus-within {
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    /* Hill — green dome the Geldspeicher sits on; soft diagonal gradient does the 3D feel */
+    .bildung-hill {
+      stroke: var(--outline);
+      stroke-width: 2.5;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+    }
+    .bildung-hill-contour { fill: none; stroke: #3F5D49; stroke-width: 1; opacity: 0.35; stroke-linecap: round; }
+    .bildung-hill-base { fill: none; stroke: #2A4232; stroke-width: 5; stroke-linecap: round; opacity: 0.55; }
+    .bildung-road {
+      fill: #C09A6A;
+      stroke: var(--outline);
+      stroke-width: 3;
+      stroke-linejoin: round;
+    }
+    .bildung-road-shade {
+      fill: none;
+      stroke: #9C7A48;
+      stroke-width: 2.5;
+      opacity: 0.55;
+      stroke-linecap: round;
+    }
+
+    /* Newspaper sign — first sign Peter sees on the way up; same vocab as lesson signs */
+    .bildung-newspaper { cursor: pointer; }
+    .bildung-newspaper-body { transition: translate 80ms ease; }
+    .bildung-newspaper-shadow {
+      transition: opacity 80ms ease;
+      opacity: 0.42;
+    }
+    .bildung-newspaper:active .bildung-newspaper-body { translate: 0 3px; }
+    .bildung-newspaper:active .bildung-newspaper-shadow { opacity: 0.18; }
+    .bildung-newspaper,
+    .bildung-newspaper:focus,
+    .bildung-newspaper:focus-visible,
+    .bildung-newspaper:focus-within,
+    #bildung-gate,
+    #bildung-gate:focus,
+    #bildung-gate:focus-visible,
+    #bildung-gate:focus-within {
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Wasserrad — the room's quiet motion: an overshot Muehlrad turning at the forest foot.
+       Rotating group is symmetric about its local origin, so fill-box pivots on the hub. */
+    .bildung-wasserrad-wheel {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: bildung-wasserrad-spin 12s linear infinite;
+    }
+    @keyframes bildung-wasserrad-spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) {
+      .bildung-wasserrad-wheel { animation-play-state: paused; }
+    }

@@ -1,0 +1,363 @@
+    /* Shared bottom-sheet styles for Bitcoin kaufen + Bitcoin verkaufen.
+       Both flows use the exact same visual language; only the IDs and class
+       prefixes differ. Selectors are paired so a single rule covers both. */
+
+    /* Scrim behind the sheet */
+    .buy-scrim,
+    .sell-scrim {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 22, 30, 0.52);
+      z-index: 70;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 380ms ease;
+    }
+    .buy-scrim.is-active,
+    .sell-scrim.is-active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Sheet — slides up from the bottom of .phone */
+    .buy-sheet,
+    .sell-sheet {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--stone);
+      border: 2.5px solid var(--outline);
+      border-bottom: none;
+      border-radius: 24px 24px 0 0;
+      z-index: 80;
+      transform: translateY(102%);
+      transition: transform 380ms cubic-bezier(.22,.9,.28,1);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .buy-sheet[data-step="amount"],
+    .buy-sheet[data-step="confirm"],
+    .sell-sheet[data-step="amount"],
+    .sell-sheet[data-step="confirm"] {
+      transform: translateY(0);
+    }
+
+    /* Drag handle */
+    .buy-sheet__handle,
+    .sell-sheet__handle {
+      width: 44px;
+      height: 5px;
+      background: var(--label);
+      border-radius: 3px;
+      margin: 14px auto 0;
+      opacity: 0.4;
+      flex-shrink: 0;
+    }
+
+    /* Two-step inner track */
+    .buy-sheet__track,
+    .sell-sheet__track {
+      display: flex;
+      width: 200%;
+      transition: transform 320ms cubic-bezier(.22,.9,.28,1);
+    }
+    .buy-sheet[data-step="confirm"] .buy-sheet__track,
+    .sell-sheet[data-step="confirm"] .sell-sheet__track {
+      transform: translateX(-50%);
+    }
+
+    .buy-sheet__step,
+    .sell-sheet__step {
+      width: 50%;
+      padding: 16px 24px 36px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .buy-sheet__section-label,
+    .sell-sheet__section-label {
+      font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 1.8px;
+      color: var(--label);
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    /* Amount display */
+    .buy-amount,
+    .sell-amount {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .buy-amount__value,
+    .sell-amount__value {
+      font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
+      font-size: 54px;
+      font-weight: 900;
+      color: var(--num);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -1px;
+      line-height: 1;
+    }
+    .buy-amount__sats,
+    .sell-amount__sats {
+      font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
+      font-size: 13px;
+      color: var(--label);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Preset chips */
+    .buy-chips,
+    .sell-chips {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    .buy-chip,
+    .sell-chip {
+      background: rgba(255,255,255,0.08);
+      border: 2.2px solid var(--outline);
+      border-radius: 14px;
+      color: var(--num);
+      font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
+      font-size: 15px;
+      font-weight: 900;
+      padding: 11px 0;
+      cursor: pointer;
+      box-shadow: 0 3px 0 var(--shadow);
+      transition: transform 0.08s, box-shadow 0.08s, background 0.12s, opacity 0.12s;
+    }
+    .buy-chip:active,
+    .sell-chip:active {
+      transform: translateY(3px);
+      box-shadow: 0 0 0 var(--shadow);
+    }
+    .buy-chip.is-active,
+    .sell-chip.is-active {
+      background: var(--accent);
+      color: var(--button-fg);
+    }
+    .buy-chip:disabled,
+    .sell-chip:disabled {
+      opacity: 0.32;
+      cursor: not-allowed;
+      box-shadow: 0 0 0 var(--shadow);
+    }
+
+    /* Custom amount */
+    .buy-sheet__custom-trigger,
+    .sell-sheet__custom-trigger {
+      background: none;
+      border: none;
+      color: var(--label);
+      font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
+      font-size: 12px;
+      cursor: pointer;
+      text-align: center;
+      padding: 0;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      opacity: 0.6;
+    }
+    .buy-sheet__custom-input,
+    .sell-sheet__custom-input {
+      display: none;
+      background: rgba(0,0,0,0.22);
+      border: 2px solid var(--outline);
+      border-radius: 12px;
+      color: var(--num);
+      font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
+      font-size: 18px;
+      font-weight: 900;
+      padding: 10px 16px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+      outline: none;
+      width: 100%;
+      transition: border-color 0.12s;
+    }
+    .buy-sheet__custom-input.is-visible,
+    .sell-sheet__custom-input.is-visible {
+      display: block;
+    }
+    .buy-sheet__custom-input:focus,
+    .sell-sheet__custom-input:focus {
+      border-color: var(--accent);
+    }
+    .buy-sheet__custom-input::placeholder,
+    .sell-sheet__custom-input::placeholder {
+      color: var(--label);
+      opacity: 0.45;
+    }
+    .buy-sheet__custom-input::-webkit-inner-spin-button,
+    .buy-sheet__custom-input::-webkit-outer-spin-button,
+    .sell-sheet__custom-input::-webkit-inner-spin-button,
+    .sell-sheet__custom-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    .buy-sheet__custom-input[type=number],
+    .sell-sheet__custom-input[type=number] { -moz-appearance: textfield; }
+
+    /* Sell-only: "Alles verkaufen" — secondary action above Weiter */
+    .sell-sheet__max {
+      background: transparent;
+      border: 2px solid rgba(152,166,181,0.45);
+      border-radius: 999px;
+      color: var(--label);
+      font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
+      font-size: 13px;
+      font-weight: 900;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: transform 0.08s, opacity 0.1s, border-color 0.12s;
+    }
+    .sell-sheet__max:active {
+      transform: translateY(2px);
+      opacity: 0.7;
+    }
+    .sell-sheet__max.is-active {
+      border-color: var(--accent);
+      color: var(--num);
+    }
+
+    /* Weiter button */
+    .buy-sheet__next,
+    .sell-sheet__next {
+      width: 100%;
+      background: var(--accent);
+      color: var(--button-fg);
+      border: 2.5px solid var(--outline);
+      border-radius: 999px;
+      padding: 16px 24px;
+      font-size: 17px;
+      font-weight: 900;
+      font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
+      cursor: pointer;
+      box-shadow: 0 4px 0 var(--shadow);
+      transition: transform 0.08s, box-shadow 0.08s;
+      letter-spacing: 0.2px;
+    }
+    .buy-sheet__next:active,
+    .sell-sheet__next:active {
+      transform: translateY(4px);
+      box-shadow: 0 0 0 var(--shadow);
+    }
+    .buy-sheet__next:disabled,
+    .sell-sheet__next:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    /* Confirm step */
+    .buy-summary,
+    .sell-summary {
+      text-align: center;
+      background: rgba(0,0,0,0.18);
+      border: 2px solid var(--outline);
+      border-radius: 18px;
+      padding: 22px 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .buy-summary__amount,
+    .sell-summary__amount {
+      font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
+      font-size: 44px;
+      font-weight: 900;
+      color: var(--num);
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+      letter-spacing: -1px;
+    }
+    .buy-summary__sats,
+    .sell-summary__sats {
+      font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
+      font-size: 14px;
+      color: var(--label);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Payment row */
+    .buy-payment,
+    .sell-payment {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(0,0,0,0.18);
+      border: 2px solid var(--outline);
+      border-radius: 14px;
+      padding: 14px 16px;
+      color: var(--num);
+    }
+    .buy-payment svg,
+    .sell-payment svg {
+      flex-shrink: 0;
+      color: var(--label);
+    }
+    .buy-payment span,
+    .sell-payment span {
+      font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 0.3px;
+    }
+
+    /* Action row: back + confirm */
+    .buy-sheet__actions,
+    .sell-sheet__actions {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 10px;
+      align-items: center;
+    }
+    .buy-sheet__back,
+    .sell-sheet__back {
+      background: transparent;
+      border: 2px solid rgba(152,166,181,0.35);
+      border-radius: 999px;
+      color: var(--label);
+      font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
+      font-size: 14px;
+      font-weight: 900;
+      padding: 14px 16px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: transform 0.08s, opacity 0.1s;
+    }
+    .buy-sheet__back:active,
+    .sell-sheet__back:active {
+      transform: translateY(2px);
+      opacity: 0.65;
+    }
+    .buy-sheet__confirm,
+    .sell-sheet__confirm {
+      background: var(--accent);
+      color: var(--button-fg);
+      border: 2.5px solid var(--outline);
+      border-radius: 999px;
+      padding: 16px 24px;
+      font-size: 17px;
+      font-weight: 900;
+      font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
+      cursor: pointer;
+      box-shadow: 0 4px 0 var(--shadow);
+      transition: transform 0.08s, box-shadow 0.08s, opacity 0.12s;
+      letter-spacing: 0.2px;
+    }
+    .buy-sheet__confirm:active,
+    .sell-sheet__confirm:active {
+      transform: translateY(4px);
+      box-shadow: 0 0 0 var(--shadow);
+    }
+    .buy-sheet__confirm:disabled,
+    .sell-sheet__confirm:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }

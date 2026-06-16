@@ -1,0 +1,330 @@
+    .price-sign {
+      width: 100%;
+      max-width: 340px;
+      height: 156px;
+      margin-top: 0;
+      flex: 0 0 auto;
+      visibility: visible;
+      overflow: visible;
+    }
+    .price-sign svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      overflow: visible;
+      perspective: 450px;
+      transform-style: preserve-3d;
+    }
+    /* Base transform is rotateX(0deg) — the same value the open animation lands on.
+       The 3D rotation lives ENTIRELY inside the open animation (which goes -90° → 0°).
+       On close, the animation rule is removed and the transform reverts from "animation-
+       held 0°" to "base 0°" — same value, no transition fires, zero compositor work for
+       3D rotation. The close is pure opacity fade, which is a compositor-only operation.
+       Hiding when closed comes from opacity:0 + visibility:hidden, not from 3D rotation. */
+    .stack-sign {
+      transform-box: view-box;
+      transform-origin: 170px 150px;
+      transform: rotateX(0deg);
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      opacity: 0;
+      visibility: hidden;
+      transition:
+        opacity 180ms ease,
+        visibility 0s linear 180ms;
+      will-change: transform, opacity;
+      transform-style: preserve-3d;
+    }
+    /* Open: opacity flips to 1 the instant you click (0ms delay), giving the compositor
+       a full 300ms head start before the animation actually begins moving. By the time
+       the rotation kicks off, the layer is already painted and ready — no stutter. */
+    .phone[data-mode="vault-open"] .stack-sign {
+      opacity: 1;
+      visibility: visible;
+      animation: stackSignDrop 1100ms ease-in-out 300ms both;
+      transition:
+        opacity 0s 0ms,
+        visibility 0s linear 0ms;
+    }
+    /* Animation starts at exactly -90° (edge-on, naturally invisible) so the first frame
+       is also the first visible frame — no backface-hidden pre-roll, no first-frame jank.
+       Damped pendulum: -90° → +25° (overshoot) → -12° → +6° → -3° → 0°. */
+    @keyframes stackSignDrop {
+      0%   { transform: rotateX(-90deg); }
+      35%  { transform: rotateX(25deg); }
+      55%  { transform: rotateX(-12deg); }
+      72%  { transform: rotateX(6deg); }
+      86%  { transform: rotateX(-3deg); }
+      100% { transform: rotateX(0deg); }
+    }
+
+    .sign-string {
+      transform-box: view-box;
+      will-change: transform, opacity;
+    }
+    .sign-string--left  { transform-origin: 70px 14px; }
+    .sign-string--right { transform-origin: 270px 14px; }
+
+    .sign-body-group {
+      transform-box: view-box;
+      transform-origin: 170px 92px;
+      will-change: transform, opacity;
+      transform-style: preserve-3d;
+    }
+
+    .price-sign.is-hidden .sign-pins,
+    .price-sign.is-hidden .sign-string,
+    .price-sign.is-hidden .sign-body-group { opacity: 0; }
+
+    .spacer { flex: 1; }
+    .price-sign + .spacer { flex: 0 0 120px; }
+
+    .stack-sign-hinges {
+      opacity: 0;
+      transition: opacity 180ms ease;
+    }
+    .phone[data-mode="vault-open"] .stack-sign-hinges {
+      opacity: 1;
+      transition-delay: 280ms;
+    }
+
+    /* Sign text — separate from the composited .stack-sign group so GPU layer
+       doesn't blur the type. Fades in after the pendulum settles (~86% of 1100ms
+       animation = ~950ms + 300ms start delay ≈ 1100ms from vault open). */
+    .stack-sign-text {
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 180ms ease, visibility 0s linear 180ms;
+    }
+    .phone[data-mode="vault-open"] .stack-sign-text {
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 220ms ease 1100ms, visibility 0s linear 1100ms;
+    }
+
+    .vault-button {
+      width: 354px;
+      height: 354px;
+      border: none;
+      border-radius: 50%;
+      background: transparent;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      padding: 0;
+    }
+    .vault-button:focus-visible {
+      outline: 3px solid var(--accent);
+      outline-offset: 4px;
+    }
+    .vault-stage {
+      position: relative;
+      width: 340px;
+      height: 340px;
+      perspective: 600px;
+      transform-style: preserve-3d;
+    }
+    .vault-back,
+    .vault-frame-layer,
+    .vault-door-layer,
+    .vault-hinges-layer {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+    .vault-frame-layer {
+      filter: drop-shadow(0 5px 0 rgba(15,22,30,0.55));
+    }
+    .vault-door-layer {
+      transform-origin: 53.67px 140px;
+      transition: transform 460ms cubic-bezier(.22,.9,.28,1);
+      transform-style: preserve-3d;
+      will-change: transform;
+    }
+    .phone[data-mode="vault-open"] .vault-door-layer {
+      transform: rotateY(-180deg);
+      transition-delay: 300ms;
+    }
+    /* Two-sided door: front shows when closed, back (with scratched ₿) shows when open */
+    .vault-door-face {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+    .vault-door-face--back {
+      transform: rotateY(180deg);
+    }
+    .vault-door-rim {
+      transition: stroke-width 460ms cubic-bezier(.22,.9,.28,1);
+    }
+    .phone[data-mode="vault-open"] .vault-door-rim {
+      stroke-width: 6;
+    }
+
+    .vault-wheel {
+      transform-box: view-box;
+      transform-origin: 120px 120px;
+    }
+    .phone[data-mode="vault-open"] .vault-wheel {
+      animation: wheelOpen 220ms cubic-bezier(.16,.92,.22,1) both;
+    }
+    @keyframes wheelOpen {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(1440deg); }
+    }
+
+    .vault-bolt {
+      transform-box: view-box;
+      transition: none;
+    }
+    .phone[data-mode="vault-open"] .vault-bolt {
+      transition: transform 150ms cubic-bezier(.2,.8,.2,1) 170ms;
+    }
+    .phone[data-mode="vault-open"] .vault-bolt--top { transform: translateY(15px); }
+    .phone[data-mode="vault-open"] .vault-bolt--bottom { transform: translateY(-15px); }
+    .phone[data-mode="vault-open"] .vault-bolt--left { transform: translateX(15px); }
+    .phone[data-mode="vault-open"] .vault-bolt--right { transform: translateX(-15px); }
+
+    .gold-bar,
+    .kugel {
+      transform-box: fill-box;
+      transform-origin: center;
+      will-change: translate, rotate;
+    }
+
+    /* Open-physics: only the TOP layer falls. Base is at rest from the start.
+       Door starts swinging at 300ms; top layer falls 100ms after that = 400ms. */
+    .phone[data-mode="vault-open"] .kugel--top {
+      animation: kugelFall 350ms cubic-bezier(.5, 0, .7, 1) 400ms both;
+    }
+    .phone[data-mode="vault-open"] .kugel--top.kugel--roller {
+      animation: kugelFallRoll 600ms 400ms both;
+    }
+    .phone[data-mode="vault-open"] .gold-bar--top {
+      animation: barFallTilt 380ms cubic-bezier(.5, 0, .7, 1) 400ms both;
+    }
+
+    @keyframes kugelFall {
+      0%   { translate: 0 -10px; }
+      100% { translate: 0 0; }
+    }
+
+    @keyframes kugelFallRoll {
+      0%   { translate: 0 -10px; rotate: 0deg;
+             animation-timing-function: cubic-bezier(.5, 0, .7, 1); }
+      58%  { translate: 0 0; rotate: 0deg;
+             animation-timing-function: cubic-bezier(.2, .8, .3, 1); }
+      100% { translate: var(--rx, -7px) var(--ry, 4px);
+             rotate: var(--rr, -80deg); }
+    }
+
+    @keyframes barFallTilt {
+      0%   { translate: 0 -10px; rotate: 0deg; }
+      100% { translate: 0 0; rotate: -5deg; }
+    }
+
+    .vault-empty-content,
+    .vault-stack-content {
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 180ms ease, visibility 0s linear 180ms;
+    }
+    .phone[data-mode="vault-open"][data-vault-content="empty"] .vault-empty-content,
+    .phone[data-mode="vault-open"][data-vault-content="stack"] .vault-stack-content {
+      opacity: 1;
+      visibility: visible;
+      transition-delay: 0s, 0s;
+    }
+
+    .action-zone {
+      width: 100%;
+      min-height: 62px;
+      margin-bottom: 6px;
+      display: grid;
+    }
+    .action-zone > * { grid-area: 1 / 1; }
+    .action,
+    .vault-action {
+      width: 100%;
+      color: var(--button-fg);
+      border: 2.5px solid var(--outline);
+      border-radius: 999px;
+      padding: 18px 24px;
+      font-size: 18px;
+      font-weight: 850;
+      cursor: pointer;
+      box-shadow: 0 5px 0 var(--shadow);
+      transition: transform 0.08s, box-shadow 0.08s, opacity 460ms cubic-bezier(.22,.9,.28,1), translate 460ms cubic-bezier(.22,.9,.28,1), visibility 0s linear;
+    }
+    .action:active,
+    .vault-action:active {
+      transform: translateY(4px);
+      box-shadow: 0 1px 0 var(--shadow);
+    }
+    .buy {
+      background: var(--accent);
+      opacity: 1;
+      translate: 0 0;
+      pointer-events: auto;
+      visibility: visible;
+    }
+    .vault-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      opacity: 0;
+      translate: 0 14px;
+      pointer-events: none;
+      visibility: hidden;
+      transition: opacity 460ms cubic-bezier(.22,.9,.28,1), translate 460ms cubic-bezier(.22,.9,.28,1), visibility 0s linear 460ms;
+    }
+    .vault-action--send { background: var(--accent); }
+    .vault-action--sell {
+      background: #7B8693;
+      color: var(--num);
+    }
+    .phone[data-mode="vault-open"] .buy {
+      opacity: 0;
+      translate: 0 10px;
+      pointer-events: none;
+      visibility: hidden;
+      transition-delay: 300ms, 300ms, 300ms, 300ms, 760ms;
+    }
+    .phone[data-mode="vault-open"] .vault-actions {
+      opacity: 1;
+      translate: 0 0;
+      pointer-events: auto;
+      visibility: visible;
+      transition-delay: 300ms, 300ms, 300ms;
+    }
+
+    /* Server rack LED blinks — four phases at different periods so the LEDs
+       feel organic, not lock-stepped. Pause briefly mid-cycle so the dim moment
+       reads as "data activity," not as a strobe. */
+    @keyframes ledBlink1 {
+      0%, 78%, 100% { opacity: 1; }
+      82%, 88%      { opacity: 0.18; }
+    }
+    @keyframes ledBlink2 {
+      0%, 56%, 100% { opacity: 1; }
+      62%, 70%      { opacity: 0.30; }
+    }
+    @keyframes ledBlink3 {
+      0%, 38%, 100% { opacity: 1; }
+      45%, 52%      { opacity: 0.10; }
+    }
+    @keyframes ledBlink4 {
+      0%, 88%, 100% { opacity: 1; }
+      92%, 96%      { opacity: 0.45; }
+    }
+    .led-blink-1 { animation: ledBlink1 5.0s ease-in-out infinite; animation-delay: 0.3s; }
+    .led-blink-2 { animation: ledBlink2 3.6s ease-in-out infinite; animation-delay: 1.2s; }
+    .led-blink-3 { animation: ledBlink3 7.4s ease-in-out infinite; animation-delay: 0.7s; }
+    .led-blink-4 { animation: ledBlink4 4.2s ease-in-out infinite; animation-delay: 2.1s; }
+

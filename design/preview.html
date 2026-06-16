@@ -1,0 +1,1478 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="icon" href="logo.png" type="image/png">
+  <title>Geldspeicher — Bank</title>
+  <script>
+    // Embed mode (?embed or #embed): hide the demo controls + shell chrome and
+    // centre just the phone, so the showcase site can iframe a clean device.
+    // Set on <html> here (pre-render) to avoid a flash of the dev tools.
+    if (/embed/.test(location.search) || /embed/.test(location.hash)) {
+      document.documentElement.classList.add('is-embed');
+    }
+  </script>
+  <!-- Matter.js drives the physics-based coin pile inside the vault. ~100KB, MIT-licensed. -->
+  <script src="https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js"></script>
+  <link rel="stylesheet" href="styles/base.css">
+  <link rel="stylesheet" href="styles/bildung.css">
+  <link rel="stylesheet" href="styles/chrome.css">
+  <link rel="stylesheet" href="styles/bank.css">
+  <link rel="stylesheet" href="styles/buy.css">
+  <link rel="stylesheet" href="styles/bargeld.css">
+</head>
+<body>
+  <div class="preview-shell">
+    <div class="phone" role="application" aria-label="Geldspeicher" data-mode="closed" data-room="bank" data-vault-content="stack">
+
+      <div class="phone-sky" aria-hidden="true">
+        <svg class="phone-sky-scene" viewBox="0 0 393 280" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Horizon haze: paler-blue band near ground -->
+          <rect x="0" y="208" width="393" height="50" fill="#B5DBE9" opacity="0.55"/>
+
+          <!-- Far hill (atmospheric grey-green) -->
+          <path d="M0 240 Q 80 232 160 236 Q 240 240 320 230 Q 360 226 393 236 V 280 H 0 Z"
+                fill="#7E978A" opacity="0.9"/>
+
+          <!-- Distant village — sloped-roof houses + church tower, sitting on the far hill -->
+          <g class="village village-left" fill="#5C7A82" stroke="#1A2028" stroke-width="0.8" stroke-linejoin="round" opacity="0.88">
+            <path d="M 10 230 L 18 222 L 26 230 V 240 H 10 Z"/>
+            <path d="M 28 226 L 35 218 L 42 226 V 240 H 28 Z"/>
+            <path d="M 44 224 L 50 216 L 56 224 V 240 H 44 Z"/>
+            <line x1="50" y1="216" x2="50" y2="208" stroke-width="1.2" stroke-linecap="round"/>
+            <path d="M 58 232 L 65 226 L 72 232 V 240 H 58 Z"/>
+            <path d="M 74 234 L 80 230 L 86 234 V 240 H 74 Z"/>
+          </g>
+          <g class="village village-right" fill="#5C7A82" stroke="#1A2028" stroke-width="0.8" stroke-linejoin="round" opacity="0.88">
+            <path d="M 308 234 L 314 230 L 320 234 V 240 H 308 Z"/>
+            <path d="M 322 230 L 329 224 L 336 230 V 240 H 322 Z"/>
+            <path d="M 338 226 L 345 218 L 352 226 V 240 H 338 Z"/>
+            <path d="M 354 220 L 361 212 L 368 220 V 240 H 354 Z"/>
+            <line x1="361" y1="212" x2="361" y2="202" stroke-width="1.2" stroke-linecap="round"/>
+            <path d="M 370 232 L 376 226 L 382 232 V 240 H 370 Z"/>
+            <path d="M 384 236 L 388 232 L 392 236 V 240 H 384 Z"/>
+          </g>
+          <!-- Lit windows in the village -->
+          <g fill="#A8CDDC" opacity="0.85">
+            <rect x="14" y="232" width="2" height="3"/>
+            <rect x="20" y="232" width="2" height="3"/>
+            <rect x="32" y="230" width="2" height="3"/>
+            <rect x="38" y="230" width="2" height="3"/>
+            <rect x="48" y="228" width="2" height="3"/>
+            <rect x="62" y="234" width="2" height="3"/>
+            <rect x="68" y="234" width="2" height="3"/>
+            <rect x="78" y="236" width="2" height="3"/>
+            <rect x="312" y="236" width="2" height="3"/>
+            <rect x="316" y="236" width="2" height="3"/>
+            <rect x="326" y="232" width="2" height="3"/>
+            <rect x="332" y="232" width="2" height="3"/>
+            <rect x="342" y="230" width="2" height="3"/>
+            <rect x="348" y="230" width="2" height="3"/>
+            <rect x="358" y="226" width="2" height="3"/>
+            <rect x="364" y="226" width="2" height="3"/>
+            <rect x="358" y="232" width="2" height="3"/>
+            <rect x="364" y="232" width="2" height="3"/>
+            <rect x="374" y="232" width="2" height="3"/>
+            <rect x="378" y="232" width="2" height="3"/>
+          </g>
+
+          <!-- Mid hill -->
+          <path d="M0 250 Q 90 240 196 248 Q 280 252 393 244 V 280 H 0 Z" fill="#5F7C68"/>
+
+          <!-- Near hill — same green as canvas, with inked outline -->
+          <path d="M0 260 Q 80 270 160 260 Q 240 252 320 266 Q 360 274 393 262 V 280 H 0 Z"
+                fill="#4A6B52" stroke="#1A2028" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+      </div>
+
+      <div class="rooms-viewport">
+        <div class="rooms-track">
+
+          <section class="room room--bildung" aria-label="Bildung">
+            <svg class="bildung-scene" viewBox="0 0 393 780" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+
+              <!-- Sky band lives on .phone-sky (ambient, crossfades on data-room) -->
+
+              <!-- Skyline silhouettes moved to .phone-sky-scene (fixed scenery, crossfades on data-room) -->
+
+              <!-- Clouds removed — dead weight; sky layer above already reads as sky -->
+
+              <!-- Hill — wide low dome with soft diagonal shading (lit upper-left → shadow lower-right) -->
+              <defs>
+                <linearGradient id="hillShade" x1="22%" y1="18%" x2="82%" y2="92%">
+                  <stop offset="0%"   stop-color="#A8D494"/>
+                  <stop offset="50%"  stop-color="#6A9A72"/>
+                  <stop offset="100%" stop-color="#2E4835"/>
+                </linearGradient>
+                <!-- Diagonal hatch pattern — Don Rosa ink form lines -->
+                <pattern id="hillHatch" x="0" y="0" width="7" height="7" patternUnits="userSpaceOnUse">
+                  <line x1="0" y1="7" x2="7" y2="0" stroke="#2A4232" stroke-width="1.1"/>
+                </pattern>
+                <!-- Gradient mask: sparse in lit upper-left, dense in shadow lower-right -->
+                <linearGradient id="hatchFade" x1="120" y1="262" x2="400" y2="600" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%"   stop-color="white" stop-opacity="0.10"/>
+                  <stop offset="45%"  stop-color="white" stop-opacity="0.38"/>
+                  <stop offset="100%" stop-color="white" stop-opacity="0.80"/>
+                </linearGradient>
+                <mask id="hillHatchMask">
+                  <path d="M -80 600 Q 40 585 115 430 C 113 315, 118 270, 121 262 L 273 262 C 276 270, 281 315, 281 430 Q 350 585 473 600 Z"
+                        fill="url(#hatchFade)"/>
+                </mask>
+                <!-- Retaining wall — horizontal stone courses, side-view running bond -->
+                <pattern id="wall" x="0" y="600" width="90" height="28" patternUnits="userSpaceOnUse">
+                  <rect x="0"   y="1"  width="88" height="12" rx="1.5" fill="#635850" stroke="#2A2520" stroke-width="0.85"/>
+                  <rect x="-44" y="15" width="88" height="12" rx="1.5" fill="#5C5248" stroke="#2A2520" stroke-width="0.85"/>
+                  <rect x="46"  y="15" width="88" height="12" rx="1.5" fill="#625750" stroke="#2A2520" stroke-width="0.85"/>
+                </pattern>
+                <!-- Coping stones — individual caps along the top of the wall -->
+                <pattern id="coping" x="0" y="593" width="52" height="10" patternUnits="userSpaceOnUse">
+                  <rect x="0" y="0" width="51" height="9" rx="1" fill="#8A8078" stroke="#1A2028" stroke-width="0.85"/>
+                </pattern>
+              </defs>
+              <g class="bildung-hill-group">
+                <!-- Main dome silhouette + outline. Apex is a flat plateau matching the building's footprint (x=121-273) so the building rests on real ground. -->
+                <!-- Steeper hill — narrower base, higher convex profile, base at y=600 (curb) -->
+                <path class="bildung-hill" fill="url(#hillShade)"
+                      d="M -80 600
+                         Q 40 585 115 430
+                         C 113 315, 118 270, 121 262
+                         L 273 262
+                         C 276 270, 281 315, 281 430
+                         Q 350 585 473 600 Z"/>
+                <!-- Diagonal hatch overlay — ink form, dense in shadow, sparse in light -->
+                <path d="M -80 600 Q 40 585 115 430 C 113 315, 118 270, 121 262 L 273 262 C 276 270, 281 315, 281 430 Q 350 585 473 600 Z"
+                      fill="url(#hillHatch)" mask="url(#hillHatchMask)" pointer-events="none"/>
+                <!-- Contour curves removed — invisible under canopy, dead weight -->
+                <!-- Hill base — ink edge where slope meets the curb -->
+                <path class="bildung-hill-base"
+                      d="M -40 598 Q 110 606 197 608 Q 284 606 433 598"/>
+              </g>
+
+              <!-- Tier D — near-black fir-tip ridge silhouette at plateau edge, behind building -->
+              <!-- Sawtooth canopy band: left of building (x<115) and right (x>278), peaks at y=247 -->
+              <path d="M -5 268 L -5 255 L 5 247 L 14 255 L 22 247 L 31 255 L 39 247 L 48 255 L 56 247 L 65 255 L 73 247 L 82 255 L 90 247 L 99 255 L 107 247 L 115 254 L 115 268 Z" fill="#1A2A1E"/>
+              <path d="M 278 254 L 286 247 L 294 255 L 303 247 L 311 255 L 320 247 L 328 255 L 337 247 L 345 255 L 354 247 L 362 255 L 371 247 L 379 255 L 387 247 L 395 253 L 403 248 L 403 268 L 278 268 Z" fill="#1A2A1E"/>
+
+              <!-- Building base contact — shadow arc grounds building to hill apex -->
+              <path d="M 110 264 Q 197 272 284 264" fill="none" stroke="#1A2028" stroke-width="5" stroke-linecap="round" opacity="0.45"/>
+
+              <!-- Geldspeicher — Don Rosa comic vault, v3: all ten improvements -->
+              <g class="bildung-geldspeicher">
+
+                <!-- ① SHADOWS (+7,+7 offset, drawn first) -->
+                <!-- Dome shadow -->
+                <path d="M 142 127 C 142 95 167 75 204 75 C 241 75 266 95 266 127 Z" fill="#1A2028"/>
+                <!-- Drum shadow -->
+                <rect x="131" y="125" width="146" height="14" rx="1" fill="#1A2028"/>
+                <!-- Body shadow -->
+                <rect x="123" y="137" width="162" height="125" fill="#1A2028"/>
+                <!-- Pilaster capital shadows -->
+                <rect x="119" y="137" width="25" height="8" fill="#1A2028"/>
+                <rect x="264" y="137" width="25" height="8" fill="#1A2028"/>
+
+                <!-- ② DOME — shorter (52px), properly rounded -->
+                <path d="M 135 120 C 135 88 163 68 197 68 C 231 68 259 88 259 120 Z"
+                      fill="#B85040" stroke="#1A2028" stroke-width="2.5" stroke-linejoin="round"/>
+                <!-- Dome sheen — lit left side -->
+                <path d="M 152 114 C 153 92 164 78 180 72"
+                      fill="none" stroke="#C97060" stroke-width="3" stroke-linecap="round" opacity="0.55"/>
+
+                <!-- ③ DRUM — wider than body, lighter for visual separation -->
+                <rect x="124" y="118" width="146" height="14" rx="1"
+                      fill="#506070" stroke="#1A2028" stroke-width="2"/>
+                <line x1="124" y1="118" x2="270" y2="118" stroke="#1A2028" stroke-width="1.5" opacity="0.65"/>
+
+                <!-- ④ BUILDING BODY — lighter main face vs darker pilasters -->
+                <rect x="116" y="130" width="162" height="132"
+                      fill="#4E5F6E" stroke="#1A2028" stroke-width="2.5"/>
+
+                <!-- ⑤ PILASTERS + CAPITALS + BASES -->
+                <!-- Left column -->
+                <rect x="116" y="130" width="17" height="132" fill="#3D4E5C" stroke="#1A2028" stroke-width="1.5"/>
+                <rect x="112" y="130" width="25" height="8"  rx="1" fill="#3D4E5C" stroke="#1A2028" stroke-width="1.5"/>
+                <rect x="112" y="254" width="25" height="8"  rx="1" fill="#3D4E5C" stroke="#1A2028" stroke-width="1.5"/>
+                <!-- Right column -->
+                <rect x="261" y="130" width="17" height="132" fill="#3D4E5C" stroke="#1A2028" stroke-width="1.5"/>
+                <rect x="257" y="130" width="25" height="8"  rx="1" fill="#3D4E5C" stroke="#1A2028" stroke-width="1.5"/>
+                <rect x="257" y="254" width="25" height="8"  rx="1" fill="#3D4E5C" stroke="#1A2028" stroke-width="1.5"/>
+
+                <!-- Masonry joints — below disc zone (disc occupies y=132–212) -->
+                <g stroke="#1A2028" stroke-width="0.9" opacity="0.28" stroke-linecap="round">
+                  <line x1="133" y1="220" x2="261" y2="220"/>
+                  <line x1="133" y1="235" x2="261" y2="235"/>
+                  <line x1="133" y1="250" x2="261" y2="250"/>
+                </g>
+
+
+                <!-- BB Disc — r=40, full view, nothing blocking -->
+                <circle cx="197" cy="172" r="40" fill="#F7931A" stroke="#1A2028" stroke-width="2.5"/>
+                <text x="197" y="190" text-anchor="middle"
+                      font-family="system-ui, -apple-system, 'SF Pro Display', sans-serif"
+                      font-size="50" font-weight="900" fill="#1A2028" letter-spacing="-4">BB</text>
+
+
+                <!-- Entrance lintel -->
+                <rect x="163" y="215" width="68" height="8" rx="1" fill="#3D4E5C" stroke="#1A2028" stroke-width="1.5"/>
+                <!-- Entrance door — arched top, double panel -->
+                <path d="M 167 262 L 167 237 A 30 14 0 0 1 227 237 L 227 262 Z"
+                      fill="#2C3A46" stroke="#1A2028" stroke-width="2"/>
+                <line x1="197" y1="237" x2="197" y2="262" stroke="#1A2028" stroke-width="1.2" opacity="0.60"/>
+                <circle cx="190" cy="252" r="2.5" fill="#8AABB8" stroke="#1A2028" stroke-width="1"/>
+                <circle cx="204" cy="252" r="2.5" fill="#8AABB8" stroke="#1A2028" stroke-width="1"/>
+
+                <!-- Stone stairs — 3 wide steps -->
+                <rect x="154" y="262" width="86" height="7" rx="0.5" fill="#3D4E5C" stroke="#1A2028" stroke-width="1.8"/>
+                <rect x="144" y="269" width="106" height="7" rx="0.5" fill="#3D4E5C" stroke="#1A2028" stroke-width="1.8"/>
+                <rect x="134" y="276" width="126" height="7" rx="0.5" fill="#3D4E5C" stroke="#1A2028" stroke-width="1.8"/>
+                <rect x="154" y="268" width="86" height="2" fill="#1A2028" opacity="0.28"/>
+                <rect x="144" y="275" width="106" height="2" fill="#1A2028" opacity="0.28"/>
+                <rect x="134" y="282" width="126" height="2" fill="#1A2028" opacity="0.28"/>
+
+              </g>
+
+              <!-- Path — winding dirt trail, 4 dramatic bends, fills the whole canvas width.
+                   Stroked centreline approach: ink outline (28w) + warm earth fill (24w) + worn tracks. -->
+              <g class="bildung-path">
+                <path d="M 180 615 C 222 590, 272 568, 272 510 C 272 452, 58 432, 48 382 C 48 332, 250 318, 250 285 C 250 272, 215 265, 197 264"
+                      fill="none" stroke="#1A2028" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M 180 615 C 222 590, 272 568, 272 510 C 272 452, 58 432, 48 382 C 48 332, 250 318, 250 285 C 250 272, 215 265, 197 264"
+                      fill="none" stroke="#C09A6A" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+                <!-- Worn centre tracks (slight offset from centreline) -->
+                <path d="M 184 618 C 226 592, 276 570, 276 510 C 276 452, 62 434, 52 382 C 52 332, 254 320, 254 285 C 254 272, 215 265, 197 264"
+                      fill="none" stroke="#7A5A32" stroke-width="1.7" stroke-linecap="round" opacity="0.45"/>
+                <path d="M 176 614 C 218 588, 268 566, 268 510 C 268 452, 54 430, 44 382 C 44 332, 246 316, 246 285 C 246 272, 215 265, 197 264"
+                      fill="none" stroke="#7A5A32" stroke-width="1.4" stroke-linecap="round" opacity="0.35"/>
+              </g>
+              <!-- Path surface — pebbles + edge grass tufts at the bends -->
+              <g pointer-events="none">
+                <!-- Pebbles along the path -->
+                <ellipse cx="194" cy="608" rx="2.6" ry="1.8" fill="#A09070" stroke="#1A2028" stroke-width="0.7" opacity="0.7"/>
+                <ellipse cx="245" cy="585" rx="2.2" ry="1.5" fill="#B0A080" stroke="#1A2028" stroke-width="0.6" opacity="0.6"/>
+                <ellipse cx="262" cy="540" rx="2.4" ry="1.6" fill="#A09070" stroke="#1A2028" stroke-width="0.7" opacity="0.65"/>
+                <ellipse cx="155" cy="450" rx="2.2" ry="1.5" fill="#B0A080" stroke="#1A2028" stroke-width="0.6" opacity="0.58"/>
+                <ellipse cx="60"  cy="408" rx="2.6" ry="1.8" fill="#A09070" stroke="#1A2028" stroke-width="0.7" opacity="0.65"/>
+                <ellipse cx="178" cy="362" rx="2.2" ry="1.5" fill="#B0A080" stroke="#1A2028" stroke-width="0.6" opacity="0.58"/>
+                <ellipse cx="278" cy="318" rx="2.4" ry="1.6" fill="#A09070" stroke="#1A2028" stroke-width="0.7" opacity="0.62"/>
+                <!-- Edge grass tufts at path bends -->
+                <path d="M 280 498 Q 286 488, 287 478" fill="none" stroke="#4A7050" stroke-width="1.6" stroke-linecap="round" opacity="0.7"/>
+                <path d="M 38 392 Q 32 382, 32 372" fill="none" stroke="#4A7050" stroke-width="1.6" stroke-linecap="round" opacity="0.68"/>
+                <path d="M 302 290 Q 308 280, 309 270" fill="none" stroke="#4A7050" stroke-width="1.4" stroke-linecap="round" opacity="0.62"/>
+                <path d="M 175 605 Q 168 597, 167 590" fill="none" stroke="#4A7050" stroke-width="1.4" stroke-linecap="round" opacity="0.6"/>
+              </g>
+
+              <!-- SCHWARZWALD FOREST — three depth tiers, 33 firs total -->
+              <!-- Tier C — upper frame, 8 firs pressing toward clearing (y=378–425, H=54–65px, #1C3528) -->
+              <g class="bildung-forest-tier-c">
+                <!-- Left flank -->
+                <g transform="translate(65 425)">
+                  <rect x="-3" y="0" width="5" height="18" rx="1" fill="#3A2818" stroke="#1A2028" stroke-width="1.3"/>
+                  <path d="M 0 -65 C 3 -53, 11 -37, 9 -19 C 11 -7, 6 5, 0 5 C -6 5, -11 -7, -9 -19 C -11 -37, -3 -53, 0 -65 Z" fill="#1C3528" stroke="#1A2028" stroke-width="1.8" stroke-linejoin="round"/>
+                </g>
+                <g transform="translate(82 410)">
+                  <rect x="-3" y="0" width="5" height="16" rx="1" fill="#3A2818" stroke="#1A2028" stroke-width="1.3"/>
+                  <path d="M 0 -62 C 3 -51, 10 -35, 8 -18 C 10 -7, 6 4, 0 4 C -6 4, -10 -7, -8 -18 C -10 -35, -3 -51, 0 -62 Z" fill="#1C3528" stroke="#1A2028" stroke-width="1.8" stroke-linejoin="round"/>
+                </g>
+                <g transform="translate(99 396)">
+                  <rect x="-3" y="0" width="5" height="16" rx="1" fill="#3A2818" stroke="#1A2028" stroke-width="1.3"/>
+                  <path d="M 0 -58 C 3 -47, 10 -33, 8 -17 C 10 -6, 5 4, 0 4 C -5 4, -10 -6, -8 -17 C -10 -33, -3 -47, 0 -58 Z" fill="#1C3528" stroke="#1A2028" stroke-width="1.8" stroke-linejoin="round"/>
+                </g>
+                <g transform="translate(113 379)">
+                  <rect x="-3" y="0" width="4" height="15" rx="1" fill="#3A2818" stroke="#1A2028" stroke-width="1.2"/>
+                  <path d="M 0 -54 C 2 -44, 9 -30, 7 -16 C 9 -6, 5 4, 0 4 C -5 4, -9 -6, -7 -16 C -9 -30, -2 -44, 0 -54 Z" fill="#1C3528" stroke="#1A2028" stroke-width="1.7" stroke-linejoin="round"/>
+                </g>
+                <!-- Right flank -->
+                <g transform="translate(280 379)">
+                  <rect x="-3" y="0" width="4" height="15" rx="1" fill="#3A2818" stroke="#1A2028" stroke-width="1.2"/>
+                  <path d="M 0 -54 C 2 -44, 9 -30, 7 -16 C 9 -6, 5 4, 0 4 C -5 4, -9 -6, -7 -16 C -9 -30, -2 -44, 0 -54 Z" fill="#1C3528" stroke="#1A2028" stroke-width="1.7" stroke-linejoin="round"/>
+                </g>
+                <g transform="translate(294 396)">
+                  <rect x="-3" y="0" width="5" height="16" rx="1" fill="#3A2818" stroke="#1A2028" stroke-width="1.3"/>
+                  <path d="M 0 -58 C 3 -47, 10 -33, 8 -17 C 10 -6, 5 4, 0 4 C -5 4, -10 -6, -8 -17 C -10 -33, -3 -47, 0 -58 Z" fill="#1C3528" stroke="#1A2028" stroke-width="1.8" stroke-linejoin="round"/>
+                </g>
+                <g transform="translate(311 410)">
+                  <rect x="-3" y="0" width="5" height="16" rx="1" fill="#3A2818" stroke="#1A2028" stroke-width="1.3"/>
+                  <path d="M 0 -62 C 3 -51, 10 -35, 8 -18 C 10 -7, 6 4, 0 4 C -6 4, -10 -7, -8 -18 C -10 -35, -3 -51, 0 -62 Z" fill="#1C3528" stroke="#1A2028" stroke-width="1.8" stroke-linejoin="round"/>
+                </g>
+                <g transform="translate(328 425)">
+                  <rect x="-3" y="0" width="5" height="18" rx="1" fill="#3A2818" stroke="#1A2028" stroke-width="1.3"/>
+                  <path d="M 0 -65 C 3 -53, 11 -37, 9 -19 C 11 -7, 6 5, 0 5 C -6 5, -11 -7, -9 -19 C -11 -37, -3 -53, 0 -65 Z" fill="#1C3528" stroke="#1A2028" stroke-width="1.8" stroke-linejoin="round"/>
+                </g>
+              </g>
+
+              <!-- Tier B — mid-slope dense wall, 14 firs (y=455–536, H=68–88px, #1C3528/#243D2C) -->
+              <!-- Fir at x=58,y=508 creates path-occlusion point 2 at the path's left bend (x≈62,y≈490) -->
+              <g class="bildung-forest-tier-b">
+                <!-- Left cluster -->
+                <g transform="translate(15 536)">
+                  <rect x="-3" y="0" width="6" height="20" rx="1" fill="#3A2818" stroke="#1A2028" stroke-width="1.5"/>
+                  <path d="M 0 -88 C 4 -72, 16 -50, 13 -26 C 16 -10, 9 6, 0 7 C -9 6, -16 -10, -13 -26 C -16 -50, -4 -72, 0 -88 Z" fill="#1C3528" stroke="#1A2028" stroke-width="2.0" stroke-linejoin="round"/>
+                  <path d="M -4 -76 C -9 -60, -13 -40, -10 -18" fill="none" stroke="#2D5038" stroke-width="1.3" stroke-linecap="round" opacity="0.35"/>
+                </g>
+                <g transform="translate(37 520)">
+                  <rect x="-3" y="0" width="6" height="20" rx="1" fill="#3A2818" stroke="#1A2028" stroke-width="1.4"/>
+                  <path d="M 0 -84 C 4 -69, 15 -47, 12 -24 C 15 -9, 8 6, 0 7 C -8 6, -15 -9, -12 -24 C -15 -47, -4 -69, 0 -84 Z" fill="#243D2C" stroke="#1A2028" stroke-width="2.0" stroke-linejoin="round"/>
+                  <path d="M -3 -72 C -8 -57, -12 -38, -9 -16" fill="none" stroke="#2D5038" stroke-width="1.3" stroke-linecap="round" opacity="0.35"/>
+                </g>
+                <g transform="translate(58 508)">
+                  <rect x="-3" y="0" width="6" height="20" rx="1" fill="#3A2818" stroke="#1A2028" stroke-width="1.4"/>
+                  <path d="M 0 -80 C 4 -66, 14 -44, 11 -22 C 14 -9, 8 6, 0 6 C -8 6, -14 -9, -11 -22 C -14 -44, -4 -66, 0 -80 Z" fill="#1C3528" stroke="#1A2028" stroke-width="2.0" stroke-linejoin="round"/>
+                  <path d="M -3 -68 C -8 -54, -11 -35, -8 -15" fill="none" stroke="#2D5038" stroke-width="1.2" stroke-linecap="round" opacity="0.32"/>
+                </g>
+                <g transform="translate(78 494)">
+                  <rect x="-3" y="0" width="5" height="19" rx="1" fill="#3A2818" stroke="#1A2028" stroke-width="1.4"/>
+                  <path d="M 0 -76 C 3 -63, 14 -43, 11 -21 C 14 -8, 8 5, 0 6 C -8 5, -14 -8, -11 -21 C -14 -43, -3 -63, 0 -76 Z" fill="#243D2C" stroke="#1A2028" stroke-width="1.9" stroke-linejoin="round"/>
+                </g>
+                <g transform="translate(96 481)">
+                  <rect x="-3" y="0" width="5" height="18" rx="1" fill="#3A2818" stroke="#1A2028" stroke-width="1.4"/>
+                  <path d="M 0 -74 C 3 -61, 13 -41, 11 -21 C 13 -8, 7 5, 0 6 C -7 5, -13 -8, -11 -21 C -13 -41, -3 -61, 0 -74 Z" fill="#1C3528" stroke="#1A2028" stroke-width="1.9" stroke-linejoin="round"/>
+                </g>
+                <g transform="translate(115 468)">
+                  <rect x="-3" y="0" width="5" height="18" rx="1" fill="#3A2818" stroke="#1A2028" stroke-width="1.4"/>
+                  <path d="M 0 -70 C 3 -58, 12 -39, 10 -20 C 12 -8, 7 5, 0 5 C -7 5, -12 -8, -10 -20 C -12 -39, -3 -58, 0 -70 Z" fill="#243D2C" stroke="#1A2028" stroke-width="1.8" stroke-linejoin="round"/>
+                </g>
+                <g transform="translate(132 455)">
+                  <rect x="-3" y="0" width="5" height="17" rx="1" fill="#3A2818" stroke="#1A2028" stroke-width="1.3"/>
+                  <path d="M 0 -68 C 3 -56, 12 -38, 10 -19 C 12 -7, 7 5, 0 5 C -7 5, -12 -7, -10 -19 C -12 -38, -3 -56, 0 -68 Z" fill="#1C3528" stroke="#1A2028" stroke-width="1.8" stroke-linejoin="round"/>
+                </g>
+                <!-- Right cluster -->
+                <g transform="translate(260 455)">
+                  <rect x="-3" y="0" width="5" height="17" rx="1" fill="#3A2818" stroke="#1A2028" stroke-width="1.3"/>
+                  <path d="M 0 -68 C 3 -56, 12 -38, 10 -19 C 12 -7, 7 5, 0 5 C -7 5, -12 -7, -10 -19 C -12 -38, -3 -56, 0 -68 Z" fill="#1C3528" stroke="#1A2028" stroke-width="1.8" stroke-linejoin="round"/>
+                </g>
+                <g transform="translate(277 468)">
+                  <rect x="-3" y="0" width="5" height="18" rx="1" fill="#3A2818" stroke="#1A2028" stroke-width="1.4"/>
+                  <path d="M 0 -70 C 3 -58, 12 -39, 10 -20 C 12 -8, 7 5, 0 5 C -7 5, -12 -8, -10 -20 C -12 -39, -3 -58, 0 -70 Z" fill="#243D2C" stroke="#1A2028" stroke-width="1.8" stroke-linejoin="round"/>
+                </g>
+                <g transform="translate(296 481)">
+                  <rect x="-3" y="0" width="5" height="18" rx="1" fill="#3A2818" stroke="#1A2028" stroke-width="1.4"/>
+                  <path d="M 0 -74 C 3 -61, 13 -41, 11 -21 C 13 -8, 7 5, 0 6 C -7 5, -13 -8, -11 -21 C -13 -41, -3 -61, 0 -74 Z" fill="#1C3528" stroke="#1A2028" stroke-width="1.9" stroke-linejoin="round"/>
+                </g>
+                <g transform="translate(315 494)">
+                  <rect x="-3" y="0" width="5" height="19" rx="1" fill="#3A2818" stroke="#1A2028" stroke-width="1.4"/>
+                  <path d="M 0 -76 C 3 -63, 14 -43, 11 -21 C 14 -8, 8 5, 0 6 C -8 5, -14 -8, -11 -21 C -14 -43, -3 -63, 0 -76 Z" fill="#243D2C" stroke="#1A2028" stroke-width="1.9" stroke-linejoin="round"/>
+                </g>
+                <g transform="translate(335 508)">
+                  <rect x="-3" y="0" width="6" height="20" rx="1" fill="#3A2818" stroke="#1A2028" stroke-width="1.4"/>
+                  <path d="M 0 -80 C 4 -66, 14 -44, 11 -22 C 14 -9, 8 6, 0 6 C -8 6, -14 -9, -11 -22 C -14 -44, -4 -66, 0 -80 Z" fill="#1C3528" stroke="#1A2028" stroke-width="2.0" stroke-linejoin="round"/>
+                  <path d="M -3 -68 C -8 -54, -11 -35, -8 -15" fill="none" stroke="#2D5038" stroke-width="1.2" stroke-linecap="round" opacity="0.32"/>
+                </g>
+                <g transform="translate(356 520)">
+                  <rect x="-3" y="0" width="6" height="20" rx="1" fill="#3A2818" stroke="#1A2028" stroke-width="1.4"/>
+                  <path d="M 0 -84 C 4 -69, 15 -47, 12 -24 C 15 -9, 8 6, 0 7 C -8 6, -15 -9, -12 -24 C -15 -47, -4 -69, 0 -84 Z" fill="#243D2C" stroke="#1A2028" stroke-width="2.0" stroke-linejoin="round"/>
+                  <path d="M -3 -72 C -8 -57, -12 -38, -9 -16" fill="none" stroke="#2D5038" stroke-width="1.3" stroke-linecap="round" opacity="0.35"/>
+                </g>
+                <g transform="translate(377 536)">
+                  <rect x="-3" y="0" width="6" height="20" rx="1" fill="#3A2818" stroke="#1A2028" stroke-width="1.5"/>
+                  <path d="M 0 -88 C 4 -72, 16 -50, 13 -26 C 16 -10, 9 6, 0 7 C -9 6, -16 -10, -13 -26 C -16 -50, -4 -72, 0 -88 Z" fill="#1C3528" stroke="#1A2028" stroke-width="2.0" stroke-linejoin="round"/>
+                  <path d="M -4 -76 C -9 -60, -13 -40, -10 -18" fill="none" stroke="#2D5038" stroke-width="1.3" stroke-linecap="round" opacity="0.35"/>
+                </g>
+              </g>
+
+              <!-- Tier A — base forest, full-width, 11 firs (y=598–622, H=105–115px, #2A5235/#305C3C) -->
+              <!-- Firs at x=168 and x=225 frame the path entry — occlusion point 1 -->
+              <!-- Grass strip + fence render above these in SVG order, grounding them naturally -->
+              <g class="bildung-forest-tier-a">
+                <g transform="translate(-8 622)">
+                  <rect x="-3" y="0" width="6" height="24" rx="1" fill="#3A2818" stroke="#1A2028" stroke-width="1.5"/>
+                  <path d="M 0 -115 C 5 -94, 20 -64, 16 -33 C 20 -13, 11 8, 0 8 C -11 8, -20 -13, -16 -33 C -20 -64, -5 -94, 0 -115 Z" fill="#2A5235" stroke="#1A2028" stroke-width="2.2" stroke-linejoin="round"/>
+                  <path d="M -4 -100 C -9 -80, -15 -55, -12 -28" fill="none" stroke="#3D7448" stroke-width="1.5" stroke-linecap="round" opacity="0.42"/>
+                </g>
+                <g transform="translate(32 612)">
+                  <rect x="-3" y="0" width="6" height="22" rx="1" fill="#3A2818" stroke="#1A2028" stroke-width="1.5"/>
+                  <path d="M 0 -108 C 5 -89, 19 -60, 15 -31 C 19 -12, 10 8, 0 8 C -10 8, -19 -12, -15 -31 C -19 -60, -5 -89, 0 -108 Z" fill="#305C3C" stroke="#1A2028" stroke-width="2.2" stroke-linejoin="round"/>
+                  <path d="M -4 -94 C -9 -75, -14 -52, -11 -26" fill="none" stroke="#3D7448" stroke-width="1.5" stroke-linecap="round" opacity="0.45"/>
+                </g>
+                <g transform="translate(68 605)">
+                  <rect x="-3" y="0" width="6" height="23" rx="1" fill="#3A2818" stroke="#1A2028" stroke-width="1.5"/>
+                  <path d="M 0 -110 C 5 -90, 20 -61, 16 -32 C 20 -12, 11 8, 0 8 C -11 8, -20 -12, -16 -32 C -20 -61, -5 -90, 0 -110 Z" fill="#2A5235" stroke="#1A2028" stroke-width="2.2" stroke-linejoin="round"/>
+                  <path d="M -4 -96 C -9 -78, -15 -53, -12 -27" fill="none" stroke="#3D7448" stroke-width="1.5" stroke-linecap="round" opacity="0.44"/>
+                </g>
+                <g transform="translate(105 598)">
+                  <rect x="-3" y="0" width="6" height="22" rx="1" fill="#3A2818" stroke="#1A2028" stroke-width="1.5"/>
+                  <path d="M 0 -105 C 5 -86, 19 -58, 15 -30 C 19 -11, 10 7, 0 7 C -10 7, -19 -11, -15 -30 C -19 -58, -5 -86, 0 -105 Z" fill="#305C3C" stroke="#1A2028" stroke-width="2.2" stroke-linejoin="round"/>
+                  <path d="M -4 -92 C -9 -74, -14 -50, -11 -25" fill="none" stroke="#3D7448" stroke-width="1.4" stroke-linecap="round" opacity="0.42"/>
+                </g>
+                <g transform="translate(140 602)">
+                  <rect x="-3" y="0" width="6" height="22" rx="1" fill="#3A2818" stroke="#1A2028" stroke-width="1.5"/>
+                  <path d="M 0 -108 C 5 -89, 19 -60, 15 -31 C 19 -12, 10 8, 0 8 C -10 8, -19 -12, -15 -31 C -19 -60, -5 -89, 0 -108 Z" fill="#2A5235" stroke="#1A2028" stroke-width="2.2" stroke-linejoin="round"/>
+                  <path d="M -4 -94 C -9 -75, -14 -52, -11 -26" fill="none" stroke="#3D7448" stroke-width="1.5" stroke-linecap="round" opacity="0.44"/>
+                </g>
+                <g transform="translate(168 608)">
+                  <rect x="-3" y="0" width="6" height="23" rx="1" fill="#4A3020" stroke="#1A2028" stroke-width="1.5"/>
+                  <path d="M 0 -112 C 5 -92, 20 -62, 16 -32 C 20 -12, 11 8, 0 8 C -11 8, -20 -12, -16 -32 C -20 -62, -5 -92, 0 -112 Z" fill="#305C3C" stroke="#1A2028" stroke-width="2.2" stroke-linejoin="round"/>
+                  <path d="M -4 -98 C -9 -79, -15 -54, -12 -27" fill="none" stroke="#3D7448" stroke-width="1.5" stroke-linecap="round" opacity="0.45"/>
+                </g>
+                <g transform="translate(225 608)">
+                  <rect x="-3" y="0" width="6" height="23" rx="1" fill="#4A3020" stroke="#1A2028" stroke-width="1.5"/>
+                  <path d="M 0 -112 C 5 -92, 20 -62, 16 -32 C 20 -12, 11 8, 0 8 C -11 8, -20 -12, -16 -32 C -20 -62, -5 -92, 0 -112 Z" fill="#305C3C" stroke="#1A2028" stroke-width="2.2" stroke-linejoin="round"/>
+                  <path d="M -4 -98 C -9 -79, -15 -54, -12 -27" fill="none" stroke="#3D7448" stroke-width="1.5" stroke-linecap="round" opacity="0.45"/>
+                </g>
+                <g transform="translate(255 600)">
+                  <rect x="-3" y="0" width="6" height="22" rx="1" fill="#3A2818" stroke="#1A2028" stroke-width="1.5"/>
+                  <path d="M 0 -107 C 5 -88, 19 -59, 15 -31 C 19 -12, 10 7, 0 7 C -10 7, -19 -12, -15 -31 C -19 -59, -5 -88, 0 -107 Z" fill="#2A5235" stroke="#1A2028" stroke-width="2.2" stroke-linejoin="round"/>
+                  <path d="M -4 -93 C -9 -75, -14 -51, -11 -26" fill="none" stroke="#3D7448" stroke-width="1.4" stroke-linecap="round" opacity="0.42"/>
+                </g>
+                <g transform="translate(292 605)">
+                  <rect x="-3" y="0" width="6" height="23" rx="1" fill="#3A2818" stroke="#1A2028" stroke-width="1.5"/>
+                  <path d="M 0 -110 C 5 -90, 20 -61, 16 -32 C 20 -12, 11 8, 0 8 C -11 8, -20 -12, -16 -32 C -20 -61, -5 -90, 0 -110 Z" fill="#305C3C" stroke="#1A2028" stroke-width="2.2" stroke-linejoin="round"/>
+                  <path d="M -4 -96 C -9 -78, -15 -53, -12 -27" fill="none" stroke="#3D7448" stroke-width="1.5" stroke-linecap="round" opacity="0.44"/>
+                </g>
+                <g transform="translate(330 612)">
+                  <rect x="-3" y="0" width="6" height="22" rx="1" fill="#3A2818" stroke="#1A2028" stroke-width="1.5"/>
+                  <path d="M 0 -108 C 5 -89, 19 -60, 15 -31 C 19 -12, 10 8, 0 8 C -10 8, -19 -12, -15 -31 C -19 -60, -5 -89, 0 -108 Z" fill="#2A5235" stroke="#1A2028" stroke-width="2.2" stroke-linejoin="round"/>
+                  <path d="M -4 -94 C -9 -75, -14 -52, -11 -26" fill="none" stroke="#3D7448" stroke-width="1.5" stroke-linecap="round" opacity="0.44"/>
+                </g>
+                <g transform="translate(398 620)">
+                  <rect x="-3" y="0" width="6" height="24" rx="1" fill="#3A2818" stroke="#1A2028" stroke-width="1.5"/>
+                  <path d="M 0 -115 C 5 -94, 20 -64, 16 -33 C 20 -13, 11 8, 0 8 C -11 8, -20 -13, -16 -33 C -20 -64, -5 -94, 0 -115 Z" fill="#2A5235" stroke="#1A2028" stroke-width="2.2" stroke-linejoin="round"/>
+                  <path d="M -4 -100 C -9 -80, -15 -55, -12 -28" fill="none" stroke="#3D7448" stroke-width="1.5" stroke-linecap="round" opacity="0.42"/>
+                </g>
+              </g>
+
+              <!-- Walkway — warm European pedestrian paving stone -->
+              <rect x="0" y="638" width="393" height="142" fill="#C0B49A"/>
+              <!-- Paving slab joints — horizontal -->
+              <g stroke="#1A2028" stroke-width="0.8" opacity="0.18" stroke-linecap="square">
+                <line x1="0" y1="668" x2="393" y2="668"/>
+                <line x1="0" y1="698" x2="393" y2="698"/>
+                <line x1="0" y1="728" x2="393" y2="728"/>
+                <line x1="0" y1="758" x2="393" y2="758"/>
+              </g>
+              <!-- Paving slab joints — vertical, alternating offsets -->
+              <g stroke="#1A2028" stroke-width="0.8" opacity="0.14" stroke-linecap="square">
+                <line x1="48"  y1="638" x2="48"  y2="668"/>
+                <line x1="98"  y1="638" x2="98"  y2="668"/>
+                <line x1="148" y1="638" x2="148" y2="668"/>
+                <line x1="198" y1="638" x2="198" y2="668"/>
+                <line x1="248" y1="638" x2="248" y2="668"/>
+                <line x1="298" y1="638" x2="298" y2="668"/>
+                <line x1="348" y1="638" x2="348" y2="668"/>
+                <line x1="24"  y1="668" x2="24"  y2="698"/>
+                <line x1="74"  y1="668" x2="74"  y2="698"/>
+                <line x1="124" y1="668" x2="124" y2="698"/>
+                <line x1="174" y1="668" x2="174" y2="698"/>
+                <line x1="224" y1="668" x2="224" y2="698"/>
+                <line x1="274" y1="668" x2="274" y2="698"/>
+                <line x1="324" y1="668" x2="324" y2="698"/>
+                <line x1="374" y1="668" x2="374" y2="698"/>
+                <line x1="48"  y1="698" x2="48"  y2="728"/>
+                <line x1="98"  y1="698" x2="98"  y2="728"/>
+                <line x1="148" y1="698" x2="148" y2="728"/>
+                <line x1="248" y1="698" x2="248" y2="728"/>
+                <line x1="298" y1="698" x2="298" y2="728"/>
+                <line x1="348" y1="698" x2="348" y2="728"/>
+              </g>
+              <!-- Walkway top edge (kerb at hill base) -->
+              <line x1="0" y1="638" x2="393" y2="638" stroke="#1A2028" stroke-width="2"/>
+
+              <!-- Grass strip at hill base (where path meets street) -->
+              <rect x="0" y="596" width="393" height="42" fill="#5A8060"/>
+
+        <!-- ===== WASSERRAD — overshot Muehlrad in the 29px fir-gap (right grass strip); quiet motion =====
+                   Geography implied (no creek line on the hill): spring-notch -> short flume -> wheel -> water gone. -->
+              <g class="bildung-wasserrad" transform="translate(363 616)" pointer-events="none">
+                <ellipse cx="0" cy="21" rx="22" ry="3.5" fill="#1A2028" opacity="0.28"/>
+                <ellipse cx="-18" cy="-13" rx="5" ry="2.5" fill="#2A3820" opacity="0.7"/>
+                <!-- short timber flume from behind the fir, pouring onto the wheel top -->
+                <path d="M -24 -20 L -3 -16" stroke="#1A2028" stroke-width="5" stroke-linecap="round"/>
+                <path d="M -24 -20 L -3 -16" stroke="#5C3D24" stroke-width="3" stroke-linecap="round"/>
+                <path d="M -23 -21.4 L -4 -17.6" stroke="#9A6A42" stroke-width="1" stroke-linecap="round" opacity="0.85"/>
+                <!-- thin water stream falling from flume lip onto the wheel top -->
+                <path d="M -5 -16 q 2 4 0 8" fill="none" stroke="#9BC0CE" stroke-width="2" stroke-linecap="round" opacity="0.9"/>
+                <!-- trestle post rooting into the kerb -->
+                <rect x="-2" y="0" width="4" height="28" fill="#5C3D24" stroke="#1A2028" stroke-width="1.5"/>
+                <line x1="1.4" y1="9" x2="3" y2="7" stroke="#1A2028" stroke-width="0.9" opacity="0.4"/>
+                <line x1="1.4" y1="17" x2="3" y2="15" stroke="#1A2028" stroke-width="0.9" opacity="0.4"/>
+                <circle cx="2" cy="2" r="4" fill="#1A2028" opacity="0.4"/>
+                <g class="bildung-wasserrad-wheel">
+                  <circle r="21" fill="none" stroke="#1A2028" stroke-width="2"/>
+                  <circle r="16.5" fill="none" stroke="#6B4A2C" stroke-width="7"/>
+                  <circle r="13" fill="none" stroke="#1A2028" stroke-width="1.6"/>
+                  <circle r="20" fill="none" stroke="#3A2818" stroke-width="0.8" opacity="0.5"/>
+                    <g transform="rotate(0) translate(0 -20)"><rect x="-3.4" y="-4.5" width="6.8" height="6" rx="1" fill="#8A5E36" stroke="#1A2028" stroke-width="1"/><line x1="-3" y1="-1.4" x2="3" y2="-1.4" stroke="#1A2028" stroke-width="0.8" opacity="0.45"/></g>
+                    <g transform="rotate(36) translate(0 -20)"><rect x="-3.4" y="-4.5" width="6.8" height="6" rx="1" fill="#8A5E36" stroke="#1A2028" stroke-width="1"/><line x1="-3" y1="-1.4" x2="3" y2="-1.4" stroke="#1A2028" stroke-width="0.8" opacity="0.45"/></g>
+                    <g transform="rotate(72) translate(0 -20)"><rect x="-3.4" y="-4.5" width="6.8" height="6" rx="1" fill="#8A5E36" stroke="#1A2028" stroke-width="1"/><line x1="-3" y1="-1.4" x2="3" y2="-1.4" stroke="#1A2028" stroke-width="0.8" opacity="0.45"/></g>
+                    <g transform="rotate(108) translate(0 -20)"><rect x="-3.4" y="-4.5" width="6.8" height="6" rx="1" fill="#8A5E36" stroke="#1A2028" stroke-width="1"/><line x1="-3" y1="-1.4" x2="3" y2="-1.4" stroke="#1A2028" stroke-width="0.8" opacity="0.45"/></g>
+                    <g transform="rotate(144) translate(0 -20)"><rect x="-3.4" y="-4.5" width="6.8" height="6" rx="1" fill="#8A5E36" stroke="#1A2028" stroke-width="1"/><line x1="-3" y1="-1.4" x2="3" y2="-1.4" stroke="#1A2028" stroke-width="0.8" opacity="0.45"/></g>
+                    <g transform="rotate(180) translate(0 -20)"><rect x="-3.4" y="-4.5" width="6.8" height="6" rx="1" fill="#8A5E36" stroke="#1A2028" stroke-width="1"/><line x1="-3" y1="-1.4" x2="3" y2="-1.4" stroke="#1A2028" stroke-width="0.8" opacity="0.45"/></g>
+                    <g transform="rotate(216) translate(0 -20)"><rect x="-3.4" y="-4.5" width="6.8" height="6" rx="1" fill="#8A5E36" stroke="#1A2028" stroke-width="1"/><line x1="-3" y1="-1.4" x2="3" y2="-1.4" stroke="#1A2028" stroke-width="0.8" opacity="0.45"/></g>
+                    <g transform="rotate(252) translate(0 -20)"><rect x="-3.4" y="-4.5" width="6.8" height="6" rx="1" fill="#8A5E36" stroke="#1A2028" stroke-width="1"/><line x1="-3" y1="-1.4" x2="3" y2="-1.4" stroke="#1A2028" stroke-width="0.8" opacity="0.45"/></g>
+                    <g transform="rotate(288) translate(0 -20)"><rect x="-3.4" y="-4.5" width="6.8" height="6" rx="1" fill="#8A5E36" stroke="#1A2028" stroke-width="1"/><line x1="-3" y1="-1.4" x2="3" y2="-1.4" stroke="#1A2028" stroke-width="0.8" opacity="0.45"/></g>
+                    <g transform="rotate(324) translate(0 -20)"><rect x="-3.4" y="-4.5" width="6.8" height="6" rx="1" fill="#8A5E36" stroke="#1A2028" stroke-width="1"/><line x1="-3" y1="-1.4" x2="3" y2="-1.4" stroke="#1A2028" stroke-width="0.8" opacity="0.45"/></g>
+                    <line x1="0" y1="0" x2="0" y2="-13" transform="rotate(0)" stroke="#7A5232" stroke-width="2.4" stroke-linecap="round"/>
+                    <line x1="0" y1="0" x2="0" y2="-13" transform="rotate(45)" stroke="#7A5232" stroke-width="2.4" stroke-linecap="round"/>
+                    <line x1="0" y1="0" x2="0" y2="-13" transform="rotate(90)" stroke="#7A5232" stroke-width="2.4" stroke-linecap="round"/>
+                    <line x1="0" y1="0" x2="0" y2="-13" transform="rotate(135)" stroke="#7A5232" stroke-width="2.4" stroke-linecap="round"/>
+                    <line x1="0" y1="0" x2="0" y2="-13" transform="rotate(180)" stroke="#7A5232" stroke-width="2.4" stroke-linecap="round"/>
+                    <line x1="0" y1="0" x2="0" y2="-13" transform="rotate(225)" stroke="#7A5232" stroke-width="2.4" stroke-linecap="round"/>
+                    <line x1="0" y1="0" x2="0" y2="-13" transform="rotate(270)" stroke="#7A5232" stroke-width="2.4" stroke-linecap="round"/>
+                    <line x1="0" y1="0" x2="0" y2="-13" transform="rotate(315)" stroke="#7A5232" stroke-width="2.4" stroke-linecap="round"/>
+                    <line x1="0" y1="-1" x2="0" y2="-12" transform="rotate(0)" stroke="#9A6A42" stroke-width="1" stroke-linecap="round" opacity="0.8"/>
+                    <line x1="0" y1="-1" x2="0" y2="-12" transform="rotate(45)" stroke="#9A6A42" stroke-width="1" stroke-linecap="round" opacity="0.8"/>
+                    <line x1="0" y1="-1" x2="0" y2="-12" transform="rotate(90)" stroke="#9A6A42" stroke-width="1" stroke-linecap="round" opacity="0.8"/>
+                    <line x1="0" y1="-1" x2="0" y2="-12" transform="rotate(135)" stroke="#9A6A42" stroke-width="1" stroke-linecap="round" opacity="0.8"/>
+                    <line x1="0" y1="-1" x2="0" y2="-12" transform="rotate(180)" stroke="#9A6A42" stroke-width="1" stroke-linecap="round" opacity="0.8"/>
+                    <line x1="0" y1="-1" x2="0" y2="-12" transform="rotate(225)" stroke="#9A6A42" stroke-width="1" stroke-linecap="round" opacity="0.8"/>
+                    <line x1="0" y1="-1" x2="0" y2="-12" transform="rotate(270)" stroke="#9A6A42" stroke-width="1" stroke-linecap="round" opacity="0.8"/>
+                    <line x1="0" y1="-1" x2="0" y2="-12" transform="rotate(315)" stroke="#9A6A42" stroke-width="1" stroke-linecap="round" opacity="0.8"/>
+                  <circle r="4" fill="#3A2818" stroke="#1A2028" stroke-width="1.8"/>
+                  <circle r="1.4" fill="#1A2028"/>
+                </g>
+              </g>
+
+              <!-- BITCOIN BOTE — small Fachwerk-framed wayside notice (Schwarzwald materials policy).
+                   Compact 56×64 free-standing half-timbered panel — wayside marker, not wall. -->
+              <g class="bildung-newspaper" tabindex="0" role="button" aria-label="Heutige Nachrichten"
+                 transform="translate(196 700)">
+                <ellipse cx="2" cy="2" rx="30" ry="2.8" fill="#1A2028" opacity="0.30"/>
+                <rect class="bildung-newspaper-shadow" x="-26" y="-62" width="56" height="64" fill="#1A2028"/>
+                <g class="bildung-newspaper-body">
+                  <!-- Cream Gefache infill -->
+                  <rect class="bildung-newspaper-frame" x="-28" y="-64" width="56" height="64"
+                        fill="#EDE4C4" stroke="#1A2028" stroke-width="2"/>
+                  <!-- Fachwerk timber beams -->
+                  <rect x="-28" y="-64" width="56" height="4" fill="#5C3D24"/>
+                  <rect x="-28" y="-4" width="56" height="4" fill="#5C3D24"/>
+                  <rect x="-28" y="-26" width="56" height="3" fill="#5C3D24"/>
+                  <rect x="-28" y="-60" width="3.5" height="56" fill="#5C3D24"/>
+                  <rect x="24.5" y="-60" width="3.5" height="56" fill="#5C3D24"/>
+                  <!-- Andreaskreuz X-brace in lower panel -->
+                  <line x1="-23" y1="-22" x2="23" y2="-7" stroke="#5C3D24" stroke-width="2.6" stroke-linecap="round"/>
+                  <line x1="23" y1="-22" x2="-23" y2="-7" stroke="#5C3D24" stroke-width="2.6" stroke-linecap="round"/>
+                  <!-- News panel masthead -->
+                  <rect x="-24.5" y="-60" width="49" height="14" fill="#1A2028"/>
+                  <text x="0" y="-53" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="7.5" font-weight="900" fill="#F5EDD8" letter-spacing="0.5">BITCOIN</text>
+                  <text x="0" y="-46" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="7.5" font-weight="900" fill="#F5EDD8" letter-spacing="1.2">BOTE</text>
+                  <!-- Article lines -->
+                  <line x1="-22" y1="-40" x2="22" y2="-40" stroke="#1A2028" stroke-width="0.8" opacity="0.45"/>
+                  <line x1="-22" y1="-35" x2="14" y2="-35" stroke="#1A2028" stroke-width="0.8" opacity="0.36"/>
+                  <line x1="-22" y1="-30" x2="18" y2="-30" stroke="#1A2028" stroke-width="0.8" opacity="0.36"/>
+                </g>
+              </g>
+
+              <!-- Lesson signs — along the path up the hill, alternating sides.
+                   Order top→bottom in DOM controls layering with tree tiers (Tier A
+                   foreground firs render last so close trees can occlude lower signs). -->
+              <!-- Sign 1: Was ist Geld? — first sign on the path, low, right of path -->
+              <g class="bildung-sign" data-lesson="1" tabindex="0" role="button" aria-label="Lektion 1: Was ist Geld?"
+                 transform="translate(245 580) rotate(-3) scale(1.0)">
+                <!-- Earth mound at post base — sign sticked into the ground -->
+                <ellipse cx="0" cy="49" rx="12" ry="3.2" fill="#8A5A30" stroke="#1A2028" stroke-width="1.3" opacity="0.95"/>
+                <path d="M -7 47 Q -8 43 -7 41" fill="none" stroke="#4A7050" stroke-width="1.2" stroke-linecap="round" opacity="0.75"/>
+                <path d="M 6 47 Q 7 43 6 41" fill="none" stroke="#4A7050" stroke-width="1.2" stroke-linecap="round" opacity="0.75"/>
+                <path d="M -3 48 Q -4 45 -3 43" fill="none" stroke="#5A8060" stroke-width="0.9" stroke-linecap="round" opacity="0.55"/>
+                <line x1="0" y1="18" x2="0" y2="48" stroke="#1A2028" stroke-width="6" stroke-linecap="round"/>
+                <line x1="0" y1="18" x2="0" y2="48" stroke="#9A6A42" stroke-width="3" stroke-linecap="round"/>
+                <line x1="3" y1="28" x2="5" y2="25" stroke="#1A2028" stroke-width="0.9" stroke-linecap="round" opacity="0.5"/>
+                <line x1="3" y1="36" x2="5" y2="33" stroke="#1A2028" stroke-width="0.9" stroke-linecap="round" opacity="0.5"/>
+                <line x1="3" y1="44" x2="5" y2="41" stroke="#1A2028" stroke-width="0.9" stroke-linecap="round" opacity="0.5"/>
+                <rect class="bildung-sign-shadow" x="-44" y="-25" width="90" height="46" rx="2.5" fill="#1A2028"/>
+                <g class="bildung-sign-body">
+                  <!-- 3D top face — sign is a wooden box, not a flat plank -->
+                  <path d="M -45 -21 L -43 -27 L 43 -27 L 45 -21 Z" fill="#7A5232" stroke="#1A2028" stroke-width="1.8"/>
+                  <rect x="-45" y="-21" width="90" height="40" rx="2.5" fill="#9A6A42" stroke="#1A2028" stroke-width="2.2"/>
+                  <g stroke="#5C3D24" stroke-width="0.9" opacity="0.5" stroke-linecap="round">
+                    <line x1="-40" y1="-15" x2="40" y2="-15"/>
+                    <line x1="-42" y1="-5" x2="38" y2="-5"/>
+                    <line x1="-40" y1="6" x2="40" y2="6"/>
+                    <line x1="-42" y1="13" x2="38" y2="13"/>
+                  </g>
+                  <text x="0" y="3" text-anchor="middle" font-weight="850" font-size="12" fill="#F5EDD8"
+                        stroke="#1A2028" stroke-width="0.4" paint-order="stroke"
+                        font-family="'Comic Sans MS', 'Marker Felt', system-ui, sans-serif">Was ist Geld?</text>
+                </g>
+              </g>
+
+              <!-- Sign 2: Warum Bitcoin? — between bend 1 and bend 2, left of path -->
+              <g class="bildung-sign" data-lesson="2" tabindex="0" role="button" aria-label="Lektion 2: Warum Bitcoin?"
+                 transform="translate(80 445) rotate(3) scale(0.94)">
+                <!-- Earth mound at post base — sign sticked into the ground -->
+                <ellipse cx="0" cy="49" rx="12" ry="3.2" fill="#8A5A30" stroke="#1A2028" stroke-width="1.3" opacity="0.95"/>
+                <path d="M -7 47 Q -8 43 -7 41" fill="none" stroke="#4A7050" stroke-width="1.2" stroke-linecap="round" opacity="0.75"/>
+                <path d="M 6 47 Q 7 43 6 41" fill="none" stroke="#4A7050" stroke-width="1.2" stroke-linecap="round" opacity="0.75"/>
+                <path d="M -3 48 Q -4 45 -3 43" fill="none" stroke="#5A8060" stroke-width="0.9" stroke-linecap="round" opacity="0.55"/>
+                <line x1="0" y1="18" x2="0" y2="48" stroke="#1A2028" stroke-width="6" stroke-linecap="round"/>
+                <line x1="0" y1="18" x2="0" y2="48" stroke="#9A6A42" stroke-width="3" stroke-linecap="round"/>
+                <!-- Shadow hatch on right face of post — Don Rosa ink form marker -->
+                <line x1="3" y1="28" x2="5" y2="25" stroke="#1A2028" stroke-width="0.9" stroke-linecap="round" opacity="0.5"/>
+                <line x1="3" y1="36" x2="5" y2="33" stroke="#1A2028" stroke-width="0.9" stroke-linecap="round" opacity="0.5"/>
+                <line x1="3" y1="44" x2="5" y2="41" stroke="#1A2028" stroke-width="0.9" stroke-linecap="round" opacity="0.5"/>
+                <rect class="bildung-sign-shadow" x="-44" y="-25" width="90" height="46" rx="2.5" fill="#1A2028"/>
+                <g class="bildung-sign-body">
+                  <!-- 3D top face — sign is a wooden box, not a flat plank -->
+                  <path d="M -45 -21 L -43 -27 L 43 -27 L 45 -21 Z" fill="#7A5232" stroke="#1A2028" stroke-width="1.8"/>
+                  <rect x="-45" y="-21" width="90" height="40" rx="2.5" fill="#9A6A42" stroke="#1A2028" stroke-width="2.2"/>
+                  <g stroke="#5C3D24" stroke-width="0.9" opacity="0.5" stroke-linecap="round">
+                    <line x1="-40" y1="-15" x2="40" y2="-15"/>
+                    <line x1="-42" y1="-5" x2="38" y2="-5"/>
+                    <line x1="-40" y1="6" x2="40" y2="6"/>
+                    <line x1="-42" y1="13" x2="38" y2="13"/>
+                  </g>
+                  <text x="0" y="3" text-anchor="middle" font-weight="850" font-size="12" fill="#F5EDD8"
+                        stroke="#1A2028" stroke-width="0.4" paint-order="stroke"
+                        font-family="'Comic Sans MS', 'Marker Felt', system-ui, sans-serif">Warum Bitcoin?</text>
+                </g>
+              </g>
+
+              <!-- Sign 3: Bitcoin kaufen — between bend 2 and bend 3, left of path -->
+              <g class="bildung-sign" data-lesson="3" tabindex="0" role="button" aria-label="Lektion 3: Bitcoin kaufen"
+                 transform="translate(70 355) rotate(-2.5) scale(0.88)">
+                <!-- Earth mound at post base — sign sticked into the ground -->
+                <ellipse cx="0" cy="49" rx="12" ry="3.2" fill="#8A5A30" stroke="#1A2028" stroke-width="1.3" opacity="0.95"/>
+                <path d="M -7 47 Q -8 43 -7 41" fill="none" stroke="#4A7050" stroke-width="1.2" stroke-linecap="round" opacity="0.75"/>
+                <path d="M 6 47 Q 7 43 6 41" fill="none" stroke="#4A7050" stroke-width="1.2" stroke-linecap="round" opacity="0.75"/>
+                <path d="M -3 48 Q -4 45 -3 43" fill="none" stroke="#5A8060" stroke-width="0.9" stroke-linecap="round" opacity="0.55"/>
+                <line x1="0" y1="18" x2="0" y2="48" stroke="#1A2028" stroke-width="6" stroke-linecap="round"/>
+                <line x1="0" y1="18" x2="0" y2="48" stroke="#9A6A42" stroke-width="3" stroke-linecap="round"/>
+                <!-- Shadow hatch on right face of post — Don Rosa ink form marker -->
+                <line x1="3" y1="28" x2="5" y2="25" stroke="#1A2028" stroke-width="0.9" stroke-linecap="round" opacity="0.5"/>
+                <line x1="3" y1="36" x2="5" y2="33" stroke="#1A2028" stroke-width="0.9" stroke-linecap="round" opacity="0.5"/>
+                <line x1="3" y1="44" x2="5" y2="41" stroke="#1A2028" stroke-width="0.9" stroke-linecap="round" opacity="0.5"/>
+                <rect class="bildung-sign-shadow" x="-44" y="-25" width="90" height="46" rx="2.5" fill="#1A2028"/>
+                <g class="bildung-sign-body">
+                  <!-- 3D top face — sign is a wooden box, not a flat plank -->
+                  <path d="M -45 -21 L -43 -27 L 43 -27 L 45 -21 Z" fill="#7A5232" stroke="#1A2028" stroke-width="1.8"/>
+                  <rect x="-45" y="-21" width="90" height="40" rx="2.5" fill="#9A6A42" stroke="#1A2028" stroke-width="2.2"/>
+                  <g stroke="#5C3D24" stroke-width="0.9" opacity="0.5" stroke-linecap="round">
+                    <line x1="-40" y1="-15" x2="40" y2="-15"/>
+                    <line x1="-42" y1="-5" x2="38" y2="-5"/>
+                    <line x1="-40" y1="6" x2="40" y2="6"/>
+                    <line x1="-42" y1="13" x2="38" y2="13"/>
+                  </g>
+                  <text x="0" y="3" text-anchor="middle" font-weight="850" font-size="12" fill="#F5EDD8"
+                        stroke="#1A2028" stroke-width="0.4" paint-order="stroke"
+                        font-family="'Comic Sans MS', 'Marker Felt', system-ui, sans-serif">Bitcoin kaufen</text>
+                </g>
+              </g>
+
+              <!-- Sign 4: Sicher haben — last sign before building, right of path -->
+              <g class="bildung-sign" data-lesson="4" tabindex="0" role="button" aria-label="Lektion 4: Sicher haben"
+                 transform="translate(290 320) rotate(3.5) scale(0.82)">
+                <!-- Earth mound at post base — sign sticked into the ground -->
+                <ellipse cx="0" cy="49" rx="12" ry="3.2" fill="#8A5A30" stroke="#1A2028" stroke-width="1.3" opacity="0.95"/>
+                <path d="M -7 47 Q -8 43 -7 41" fill="none" stroke="#4A7050" stroke-width="1.2" stroke-linecap="round" opacity="0.75"/>
+                <path d="M 6 47 Q 7 43 6 41" fill="none" stroke="#4A7050" stroke-width="1.2" stroke-linecap="round" opacity="0.75"/>
+                <path d="M -3 48 Q -4 45 -3 43" fill="none" stroke="#5A8060" stroke-width="0.9" stroke-linecap="round" opacity="0.55"/>
+                <line x1="0" y1="18" x2="0" y2="48" stroke="#1A2028" stroke-width="6" stroke-linecap="round"/>
+                <line x1="0" y1="18" x2="0" y2="48" stroke="#9A6A42" stroke-width="3" stroke-linecap="round"/>
+                <!-- Shadow hatch on right face of post — Don Rosa ink form marker -->
+                <line x1="3" y1="28" x2="5" y2="25" stroke="#1A2028" stroke-width="0.9" stroke-linecap="round" opacity="0.5"/>
+                <line x1="3" y1="36" x2="5" y2="33" stroke="#1A2028" stroke-width="0.9" stroke-linecap="round" opacity="0.5"/>
+                <line x1="3" y1="44" x2="5" y2="41" stroke="#1A2028" stroke-width="0.9" stroke-linecap="round" opacity="0.5"/>
+                <rect class="bildung-sign-shadow" x="-44" y="-25" width="90" height="46" rx="2.5" fill="#1A2028"/>
+                <g class="bildung-sign-body">
+                  <!-- 3D top face — sign is a wooden box, not a flat plank -->
+                  <path d="M -45 -21 L -43 -27 L 43 -27 L 45 -21 Z" fill="#7A5232" stroke="#1A2028" stroke-width="1.8"/>
+                  <rect x="-45" y="-21" width="90" height="40" rx="2.5" fill="#9A6A42" stroke="#1A2028" stroke-width="2.2"/>
+                  <g stroke="#5C3D24" stroke-width="0.9" opacity="0.5" stroke-linecap="round">
+                    <line x1="-40" y1="-15" x2="40" y2="-15"/>
+                    <line x1="-42" y1="-5" x2="38" y2="-5"/>
+                    <line x1="-40" y1="6" x2="40" y2="6"/>
+                    <line x1="-42" y1="13" x2="38" y2="13"/>
+                  </g>
+                  <text x="0" y="3" text-anchor="middle" font-weight="850" font-size="12" fill="#F5EDD8"
+                        stroke="#1A2028" stroke-width="0.4" paint-order="stroke"
+                        font-family="'Comic Sans MS', 'Marker Felt', system-ui, sans-serif">Sicher haben</text>
+                </g>
+              </g>
+
+            </svg>
+          </section>
+
+          <section class="room room--bank" aria-label="Bank">
+
+        <div class="price-sign is-hidden" role="img" aria-label="Bitcoinpreis">
+          <svg viewBox="0 0 340 240" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+
+            <!-- Pins — fixed to the wall, never animate -->
+            <g class="sign-pins" stroke="#1A2028" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="70" cy="14" r="7" fill="#7B8693" stroke-width="3"/>
+              <circle cx="270" cy="14" r="7" fill="#7B8693" stroke-width="3"/>
+              <path d="M67 12 C69 15 72 15 74 12" stroke-width="1.4" opacity="0.5"/>
+              <path d="M267 12 C269 15 272 15 274 12" stroke-width="1.4" opacity="0.5"/>
+            </g>
+
+            <!-- Strings — each rotates around its own pin -->
+            <line class="sign-string sign-string--left"
+                  x1="70" y1="22" x2="70" y2="58"
+                  stroke="#1A2028" stroke-width="3.5" stroke-linecap="round"/>
+            <line class="sign-string sign-string--right"
+                  x1="270" y1="22" x2="270" y2="58"
+                  stroke="#1A2028" stroke-width="3.5" stroke-linecap="round"/>
+
+            <!-- Sign body group — translates to follow string ends (parallelogram swing) -->
+            <g class="sign-body-group">
+
+              <path d="M36 64 H316 V146 H36 Z" fill="#1A2028"/>
+              <path d="M30 56 H310 V138 H30 Z" fill="#9A6A42" stroke="#1A2028" stroke-width="3.5" stroke-linejoin="round"/>
+
+              <g stroke="#5C3D24" stroke-width="1.35" opacity="0.42" stroke-linecap="round">
+                <line x1="42" y1="76" x2="62" y2="64"/>
+                <line x1="58" y1="86" x2="96" y2="64"/>
+                <line x1="52" y1="116" x2="112" y2="84"/>
+                <line x1="132" y1="68" x2="230" y2="68"/>
+                <line x1="236" y1="132" x2="286" y2="98"/>
+                <line x1="258" y1="134" x2="296" y2="110"/>
+              </g>
+
+              <g stroke="#1A2028" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M58 56 C58 50 64 50 70 56 C76 50 82 50 82 56" stroke-width="2.5" fill="none"/>
+                <path d="M258 56 C258 50 264 50 270 56 C276 50 282 50 282 56" stroke-width="2.5" fill="none"/>
+                <circle cx="70" cy="61" r="4" fill="#455260" stroke-width="2.5"/>
+                <circle cx="270" cy="61" r="4" fill="#455260" stroke-width="2.5"/>
+              </g>
+
+              <text x="170" y="80" text-anchor="middle"
+                    font-family="'Comic Sans MS', 'Marker Felt', system-ui, sans-serif"
+                    font-size="11" font-weight="900" fill="#F5EDD8" opacity="0.78"
+                    stroke="#1A2028" stroke-width="0.3" paint-order="stroke"
+                    letter-spacing="1.5">BTC PREIS</text>
+
+              <text id="priceText" x="170" y="112" text-anchor="middle"
+                    font-family="'Comic Sans MS', 'Marker Felt', system-ui, sans-serif"
+                    font-size="28" font-weight="900" fill="#F5EDD8"
+                    stroke="#1A2028" stroke-width="0.5" paint-order="stroke"
+                    letter-spacing="0"
+                    style="font-variant-numeric: tabular-nums;"></text>
+
+              <g class="stack-sign-hinges" stroke="#1A2028" stroke-width="2.2" stroke-linejoin="round">
+                <rect x="62" y="136" width="14" height="16" rx="3" fill="#5C3D24"/>
+                <rect x="264" y="136" width="14" height="16" rx="3" fill="#5C3D24"/>
+                <circle cx="69" cy="144" r="2.1" fill="#1A2028" stroke="none"/>
+                <circle cx="271" cy="144" r="2.1" fill="#1A2028" stroke="none"/>
+              </g>
+
+              <!-- Stack sign — folds down from the bottom hinge of sign 1 when vault opens -->
+              <g class="stack-sign">
+                <!-- Hard offset shadow -->
+                <path d="M36 158 H316 V250 H36 Z" fill="#1A2028"/>
+                <!-- Wood body -->
+                <path d="M30 150 H310 V242 H30 Z" fill="#9A6A42" stroke="#1A2028" stroke-width="3.5" stroke-linejoin="round"/>
+
+                <!-- Wood grain -->
+                <g stroke="#5C3D24" stroke-width="1.35" opacity="0.42" stroke-linecap="round">
+                  <line x1="44" y1="170" x2="74" y2="155"/>
+                  <line x1="60" y1="188" x2="118" y2="156"/>
+                  <line x1="232" y1="238" x2="294" y2="200"/>
+                  <line x1="256" y1="240" x2="302" y2="218"/>
+                </g>
+              </g>
+
+              <!-- Text lives outside the composited group → no GPU blur, crisp render.
+                   Fades in after the sign animation settles (~1.1s into the drop). -->
+              <g class="stack-sign-text">
+                <text id="stackMainText" x="170" y="188" text-anchor="middle"
+                      font-family="'Comic Sans MS', 'Marker Felt', system-ui, sans-serif"
+                      font-size="26" font-weight="900" fill="#F5EDD8"
+                      style="font-variant-numeric: tabular-nums;">0 Sats</text>
+                <text id="stackEurText" x="170" y="220" text-anchor="middle"
+                      font-family="'Comic Sans MS', 'Marker Felt', system-ui, sans-serif"
+                      font-size="26" font-weight="900" fill="#F5EDD8"
+                      style="font-variant-numeric: tabular-nums;"></text>
+              </g>
+
+            </g>
+          </svg>
+        </div>
+
+        <div class="spacer"></div>
+
+        <button class="vault-button" type="button" aria-label="Geldspeicher öffnen" aria-pressed="false">
+          <div class="vault-stage">
+          <svg class="vault-back" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs>
+              <clipPath id="vaultOpening">
+                <circle cx="120" cy="120" r="72"/>
+              </clipPath>
+
+              <!-- Cool dark server-room ambient. Replaces the warm hearth gradient.
+                   Deep slate centre, near-black at the rim. Tech, not cave. -->
+              <radialGradient id="serverAmbient" cx="50%" cy="38%" r="68%">
+                <stop offset="0%" stop-color="#1A2330"/>
+                <stop offset="55%" stop-color="#0E141C"/>
+                <stop offset="100%" stop-color="#06090E"/>
+              </radialGradient>
+
+              <!-- Subtle cool tech glow at the top, suggesting LED ambient -->
+              <radialGradient id="techGlow" cx="50%" cy="32%" r="60%">
+                <stop offset="0%" stop-color="#5B85A8" stop-opacity="0.20"/>
+                <stop offset="100%" stop-color="#5B85A8" stop-opacity="0"/>
+              </radialGradient>
+
+              <!-- LED symbols. Each lit LED is a soft glow halo + a bright dot
+                   on top, so when the .led-blink-* class fades opacity on the
+                   <use>, both halo and dot dim together (correct physics). The
+                   "off" state is just a small dark dot — server-board noise. -->
+              <symbol id="ledOff"    overflow="visible"><circle r="0.9" fill="#2A323C"/></symbol>
+              <symbol id="ledOff2"   overflow="visible"><circle r="0.9" fill="#3A4252"/></symbol>
+              <symbol id="ledGreen"  overflow="visible"><circle r="3.2" fill="#4FBF63" opacity="0.32"/><circle r="1.4" fill="#4FBF63"/></symbol>
+              <symbol id="ledOrange" overflow="visible"><circle r="3.4" fill="#F7931A" opacity="0.34"/><circle r="1.4" fill="#F7931A"/></symbol>
+              <symbol id="ledBlue"   overflow="visible"><circle r="2.8" fill="#5B9CC8" opacity="0.28"/><circle r="1.3" fill="#5B9CC8"/></symbol>
+              <symbol id="ledRed"    overflow="visible"><circle r="3.0" fill="#B85040" opacity="0.30"/><circle r="1.3" fill="#B85040"/></symbol>
+            </defs>
+
+            <!-- Outer disc behind the door (visible only briefly mid-swing) -->
+            <circle cx="120" cy="120" r="74" fill="#06090E" stroke="#1A2028" stroke-width="3"/>
+
+            <g class="vault-contents" clip-path="url(#vaultOpening)">
+              <!-- Back wall: cool dark server-room gradient -->
+              <circle cx="120" cy="120" r="72" fill="url(#serverAmbient)"/>
+
+              <!-- Side-wall darkening at the rim -->
+              <g opacity="0.55">
+                <path d="M 48 80 Q 56 100 56 158 L 48 158 Z" fill="#04070C"/>
+                <path d="M 192 80 Q 184 100 184 158 L 192 158 Z" fill="#04070C"/>
+              </g>
+
+              <!-- Floor plane: dark, with a faint computer-room grid -->
+              <path d="M 48 196 L 192 196 L 178 158 L 62 158 Z" fill="#06090E"/>
+              <line x1="62" y1="158" x2="178" y2="158" stroke="#1A2028" stroke-width="0.7" opacity="0.55"/>
+              <g stroke="#1A2028" stroke-width="0.4" opacity="0.32">
+                <line x1="78" y1="196" x2="87" y2="158"/>
+                <line x1="120" y1="196" x2="120" y2="158"/>
+                <line x1="162" y1="196" x2="153" y2="158"/>
+              </g>
+
+              <!-- Server racks: 5 vertical cabinets across the chamber back wall.
+                   Each rack has 5 horizontal 1U units with two LEDs per unit.
+                   LEDs are <use> references so radius/glow stays consistent and
+                   the colour mix is dialled at the symbol level (Bitcoin-orange,
+                   green/alive, cool blue, occasional red warning). Most blinks
+                   stagger across four phases (.led-blink-1..4). -->
+              <g class="server-racks">
+                <!-- Rack 1 (left) -->
+                <g transform="translate(48 74)">
+                  <rect x="0" y="0" width="24" height="106" fill="#181F28" stroke="#06090E" stroke-width="0.8"/>
+                  <line x1="2" y1="22" x2="22" y2="22" stroke="#3A4252" stroke-width="0.45"/>
+                  <line x1="2" y1="44" x2="22" y2="44" stroke="#3A4252" stroke-width="0.45"/>
+                  <line x1="2" y1="66" x2="22" y2="66" stroke="#3A4252" stroke-width="0.45"/>
+                  <line x1="2" y1="88" x2="22" y2="88" stroke="#3A4252" stroke-width="0.45"/>
+                  <use href="#ledGreen"  x="7"  y="10" class="led-blink-1"/>
+                  <use href="#ledOff"    x="17" y="10"/>
+                  <use href="#ledGreen" x="7"  y="32"/>
+                  <use href="#ledOff"    x="17" y="32"/>
+                  <use href="#ledOff"    x="7"  y="54"/>
+                  <use href="#ledOff"   x="17" y="54" class="led-blink-3"/>
+                  <use href="#ledGreen"  x="7"  y="76"/>
+                  <use href="#ledOff2"   x="17" y="76"/>
+                  <use href="#ledOff"    x="7"  y="98"/>
+                  <use href="#ledGreen" x="17" y="98" class="led-blink-4"/>
+                </g>
+
+                <!-- Rack 2 -->
+                <g transform="translate(78 74)">
+                  <rect x="0" y="0" width="24" height="106" fill="#181F28" stroke="#06090E" stroke-width="0.8"/>
+                  <line x1="2" y1="22" x2="22" y2="22" stroke="#3A4252" stroke-width="0.45"/>
+                  <line x1="2" y1="44" x2="22" y2="44" stroke="#3A4252" stroke-width="0.45"/>
+                  <line x1="2" y1="66" x2="22" y2="66" stroke="#3A4252" stroke-width="0.45"/>
+                  <line x1="2" y1="88" x2="22" y2="88" stroke="#3A4252" stroke-width="0.45"/>
+                  <use href="#ledOff"    x="7"  y="10"/>
+                  <use href="#ledGreen" x="17" y="10" class="led-blink-2"/>
+                  <use href="#ledGreen"  x="7"  y="32"/>
+                  <use href="#ledOff"    x="17" y="32"/>
+                  <use href="#ledRed"    x="7"  y="54" class="led-blink-3"/>
+                  <use href="#ledOff"    x="17" y="54"/>
+                  <use href="#ledOff"    x="7"  y="76"/>
+                  <use href="#ledGreen"  x="17" y="76"/>
+                  <use href="#ledOff"   x="7"  y="98"/>
+                  <use href="#ledGreen"  x="17" y="98" class="led-blink-1"/>
+                </g>
+
+                <!-- Rack 3 (centre) -->
+                <g transform="translate(108 74)">
+                  <rect x="0" y="0" width="24" height="106" fill="#181F28" stroke="#06090E" stroke-width="0.8"/>
+                  <line x1="2" y1="22" x2="22" y2="22" stroke="#3A4252" stroke-width="0.45"/>
+                  <line x1="2" y1="44" x2="22" y2="44" stroke="#3A4252" stroke-width="0.45"/>
+                  <line x1="2" y1="66" x2="22" y2="66" stroke="#3A4252" stroke-width="0.45"/>
+                  <line x1="2" y1="88" x2="22" y2="88" stroke="#3A4252" stroke-width="0.45"/>
+                  <use href="#ledGreen" x="7"  y="10" class="led-blink-1"/>
+                  <use href="#ledGreen"  x="17" y="10"/>
+                  <use href="#ledOff"    x="7"  y="32"/>
+                  <use href="#ledOff"   x="17" y="32" class="led-blink-4"/>
+                  <use href="#ledGreen"  x="7"  y="54"/>
+                  <use href="#ledOff"    x="17" y="54"/>
+                  <use href="#ledOff2"   x="7"  y="76"/>
+                  <use href="#ledGreen" x="17" y="76"/>
+                  <use href="#ledGreen"  x="7"  y="98" class="led-blink-2"/>
+                  <use href="#ledOff"    x="17" y="98"/>
+                </g>
+
+                <!-- Rack 4 -->
+                <g transform="translate(138 74)">
+                  <rect x="0" y="0" width="24" height="106" fill="#181F28" stroke="#06090E" stroke-width="0.8"/>
+                  <line x1="2" y1="22" x2="22" y2="22" stroke="#3A4252" stroke-width="0.45"/>
+                  <line x1="2" y1="44" x2="22" y2="44" stroke="#3A4252" stroke-width="0.45"/>
+                  <line x1="2" y1="66" x2="22" y2="66" stroke="#3A4252" stroke-width="0.45"/>
+                  <line x1="2" y1="88" x2="22" y2="88" stroke="#3A4252" stroke-width="0.45"/>
+                  <use href="#ledOff"    x="7"  y="10"/>
+                  <use href="#ledGreen"  x="17" y="10" class="led-blink-3"/>
+                  <use href="#ledGreen" x="7"  y="32"/>
+                  <use href="#ledOff"    x="17" y="32"/>
+                  <use href="#ledOff"    x="7"  y="54"/>
+                  <use href="#ledGreen"  x="17" y="54" class="led-blink-1"/>
+                  <use href="#ledOff"   x="7"  y="76"/>
+                  <use href="#ledOff2"   x="17" y="76"/>
+                  <use href="#ledOff"    x="7"  y="98"/>
+                  <use href="#ledGreen" x="17" y="98" class="led-blink-4"/>
+                </g>
+
+                <!-- Rack 5 (right) -->
+                <g transform="translate(168 74)">
+                  <rect x="0" y="0" width="24" height="106" fill="#181F28" stroke="#06090E" stroke-width="0.8"/>
+                  <line x1="2" y1="22" x2="22" y2="22" stroke="#3A4252" stroke-width="0.45"/>
+                  <line x1="2" y1="44" x2="22" y2="44" stroke="#3A4252" stroke-width="0.45"/>
+                  <line x1="2" y1="66" x2="22" y2="66" stroke="#3A4252" stroke-width="0.45"/>
+                  <line x1="2" y1="88" x2="22" y2="88" stroke="#3A4252" stroke-width="0.45"/>
+                  <use href="#ledGreen"  x="7"  y="10" class="led-blink-2"/>
+                  <use href="#ledOff"    x="17" y="10"/>
+                  <use href="#ledOff"    x="7"  y="32"/>
+                  <use href="#ledGreen" x="17" y="32"/>
+                  <use href="#ledRed"    x="7"  y="54"/>
+                  <use href="#ledOff"    x="17" y="54"/>
+                  <use href="#ledGreen" x="7"  y="76" class="led-blink-3"/>
+                  <use href="#ledGreen"  x="17" y="76"/>
+                  <use href="#ledOff"    x="7"  y="98"/>
+                  <use href="#ledOff"   x="17" y="98" class="led-blink-1"/>
+                </g>
+
+                <!-- Cable runs across the rack tops — fibre / power conduits.
+                     Three thin curves linking different rack pairs at slightly
+                     varied heights. Reads as datacenter, not loud. -->
+                <g class="rack-cables" stroke="#3A4252" fill="none" stroke-linecap="round" opacity="0.55">
+                  <path d="M 60 74 C 70 69 90 69 102 74"  stroke-width="0.8"/>
+                  <path d="M 90 75 C 105 70 125 70 132 75" stroke-width="0.7"/>
+                  <path d="M 138 72 C 150 67 168 67 180 72" stroke-width="0.8"/>
+                  <path d="M 122 78 C 135 72 165 72 174 78" stroke-width="0.6" opacity="0.7"/>
+                </g>
+              </g>
+
+              <!-- Subtle cool ambient from above (suggests LED-lit ceiling) -->
+              <circle cx="120" cy="120" r="72" fill="url(#techGlow)" pointer-events="none"/>
+
+              <g class="vault-empty-content">
+                <!-- "Noch Leer" wooden sign — same design language as the Bildung
+                     path signs, scaled to sit on the vault floor. -->
+                <g transform="translate(120 148) scale(0.60)">
+                  <!-- Single Dagobert-style center post -->
+                  <line x1="0" y1="19" x2="0" y2="50" stroke="#1A2028" stroke-width="6.5" stroke-linecap="round"/>
+                  <line x1="0" y1="19" x2="0" y2="50" stroke="#9A6A42" stroke-width="3.2" stroke-linecap="round"/>
+                  <!-- Shadow + body -->
+                  <rect x="-43" y="-19" width="90" height="40" rx="2.5" fill="#1A2028" transform="translate(2 2)" opacity="0.55"/>
+                  <path d="M -45 -21 L -43 -27 L 43 -27 L 45 -21 Z" fill="#7A5232" stroke="#1A2028" stroke-width="1.8"/>
+                  <rect x="-45" y="-21" width="90" height="40" rx="2.5" fill="#9A6A42" stroke="#1A2028" stroke-width="2.2"/>
+                  <g stroke="#5C3D24" stroke-width="1" opacity="0.45" stroke-linecap="round">
+                    <line x1="-40" y1="-14" x2="40" y2="-14"/>
+                    <line x1="-42" y1="-4"  x2="38" y2="-4"/>
+                    <line x1="-40" y1="7"   x2="40" y2="7"/>
+                    <line x1="-42" y1="14"  x2="38" y2="14"/>
+                  </g>
+                  <text x="0" y="4" text-anchor="middle" font-weight="900" font-size="13" fill="#F5EDD8"
+                        stroke="#1A2028" stroke-width="0.4" paint-order="stroke"
+                        font-family="'Comic Sans MS', 'Marker Felt', system-ui, sans-serif">Noch Leer</text>
+                </g>
+              </g>
+
+              <g class="vault-stack-content" id="vaultPile">
+                <g id="barGroup"></g>
+                <g id="coinGroup"></g>
+              </g>
+
+            </g>
+          </svg>
+
+          <svg class="vault-frame-layer" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <g class="vault-frame">
+              <circle cx="120" cy="120" r="106" fill="none" stroke="#1A2028" stroke-width="3.5"/>
+              <circle cx="120" cy="120" r="106" fill="none" stroke="#7B8693" stroke-width="24"/>
+              <circle cx="120" cy="120" r="85" fill="none" stroke="#8E99A4" stroke-width="14"/>
+              <circle cx="120" cy="120" r="92" fill="none" stroke="#1A2028" stroke-width="3"/>
+              <circle cx="120" cy="120" r="78" fill="none" stroke="#1A2028" stroke-width="3"/>
+
+              <g fill="#1A2028">
+                <circle cx="120" cy="22" r="3"/>
+                <circle cx="189" cy="51" r="3"/>
+                <circle cx="218" cy="120" r="3"/>
+                <circle cx="189" cy="189" r="3"/>
+                <circle cx="120" cy="218" r="3"/>
+                <circle cx="51" cy="189" r="3"/>
+                <circle cx="22" cy="120" r="3"/>
+                <circle cx="51" cy="51" r="3"/>
+              </g>
+            </g>
+          </svg>
+
+          <div class="vault-door-layer" aria-hidden="true">
+            <!-- FRONT face: what we see when the vault is closed (mechanical exterior) -->
+            <svg class="vault-door-face vault-door-face--front" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g class="vault-door">
+                <circle class="vault-door-rim" cx="120" cy="120" r="74" fill="#3A4452" stroke="#1A2028" stroke-width="3"/>
+                <circle cx="120" cy="120" r="68" fill="#5E6973" stroke="#1A2028" stroke-width="2"/>
+
+                <g class="vault-bolts" stroke="#1A2028" stroke-width="7" stroke-linecap="round">
+                  <line class="vault-bolt vault-bolt--top" x1="120" y1="78" x2="120" y2="103"/>
+                  <line class="vault-bolt vault-bolt--bottom" x1="120" y1="137" x2="120" y2="162"/>
+                  <line class="vault-bolt vault-bolt--left" x1="78" y1="120" x2="103" y2="120"/>
+                  <line class="vault-bolt vault-bolt--right" x1="137" y1="120" x2="162" y2="120"/>
+                </g>
+                <g class="vault-bolt-caps" fill="#1A2028">
+                  <circle cx="120" cy="78" r="6"/>
+                  <circle cx="120" cy="162" r="6"/>
+                  <circle cx="78" cy="120" r="6"/>
+                  <circle cx="162" cy="120" r="6"/>
+                </g>
+
+                <g class="vault-wheel">
+                  <circle cx="120" cy="120" r="20" fill="#8E99A4" stroke="#1A2028" stroke-width="3"/>
+                  <circle cx="120" cy="120" r="6" fill="#1A2028"/>
+                  <g stroke="#1A2028" stroke-width="3" stroke-linecap="round">
+                    <line x1="120" y1="100" x2="120" y2="108"/>
+                    <line x1="120" y1="132" x2="120" y2="140"/>
+                    <line x1="100" y1="120" x2="108" y2="120"/>
+                    <line x1="132" y1="120" x2="140" y2="120"/>
+                  </g>
+                </g>
+
+                <path d="M 64 82 A 68 68 0 0 1 100 56" stroke="#D8E0E8" stroke-width="3" stroke-linecap="round" fill="none"/>
+
+                <g stroke="#1A2028" stroke-width="1.2" opacity="0.45" stroke-linecap="round">
+                  <line x1="135" y1="170" x2="160" y2="145"/>
+                  <line x1="145" y1="180" x2="170" y2="155"/>
+                  <line x1="155" y1="180" x2="180" y2="155"/>
+                  <line x1="160" y1="190" x2="180" y2="170"/>
+                </g>
+              </g>
+            </svg>
+
+            <!-- BACK face: visible only when door swings open. Smooth inner metal,
+                 ₿ scratched into upper-right quadrant — Peter's maker's mark. -->
+            <svg class="vault-door-face vault-door-face--back" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g class="vault-door-inner">
+                <circle cx="120" cy="120" r="74" fill="#3A4452" stroke="#1A2028" stroke-width="3"/>
+                <circle cx="120" cy="120" r="68" fill="#5E6973" stroke="#1A2028" stroke-width="2"/>
+
+                <!-- Highlight arc on the back (mirrored from front to suggest same metal) -->
+                <path d="M 140 56 A 68 68 0 0 1 176 82" stroke="#D8E0E8" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.45"/>
+
+                <!-- Inner face is plain metal for now. Smiley-with-₿-eyes mark is parked as
+                     an idea (see git history; can be revived as design/parts/vault/inside-mark.svg). -->
+              </g>
+            </svg>
+          </div>
+
+          <svg class="vault-hinges-layer" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <g class="vault-hinges" stroke="#1A2028" stroke-width="2.2" stroke-linejoin="round">
+              <g>
+                <rect x="44" y="76" width="14" height="22" rx="6" fill="#3A4452"/>
+                <line x1="44" y1="87" x2="58" y2="87" stroke-width="1.4"/>
+                <circle cx="51" cy="79" r="1.6" fill="#1A2028" stroke="none"/>
+                <circle cx="51" cy="95" r="1.6" fill="#1A2028" stroke="none"/>
+              </g>
+              <g>
+                <rect x="44" y="142" width="14" height="22" rx="6" fill="#3A4452"/>
+                <line x1="44" y1="153" x2="58" y2="153" stroke-width="1.4"/>
+                <circle cx="51" cy="145" r="1.6" fill="#1A2028" stroke="none"/>
+                <circle cx="51" cy="161" r="1.6" fill="#1A2028" stroke="none"/>
+              </g>
+            </g>
+          </svg>
+          </div>
+        </button>
+
+        <div class="spacer"></div>
+
+        <div class="action-zone">
+          <button class="action buy" type="button">Bitcoin kaufen</button>
+          <div class="vault-actions" aria-hidden="true">
+            <button class="vault-action vault-action--send" type="button" tabindex="-1">Senden</button>
+            <button class="vault-action vault-action--sell" type="button" tabindex="-1">Verkaufen</button>
+          </div>
+        </div>
+          </section>
+
+          <section class="room room--bargeld" aria-label="Bargeld">
+            <div class="bargeld-screen">
+
+              <div class="bargeld-balance-wrap">
+                <div class="bargeld-eur" id="bargeldEur">0,00 €</div>
+                <div class="bargeld-number" id="bargeldNumber">0 Sats</div>
+                <button class="bargeld-aufladen-link" type="button" id="bargeldAufladenBtn">+ Aufladen</button>
+              </div>
+
+              <div class="bargeld-actions">
+                <button class="bargeld-btn bargeld-btn--receive" type="button" id="bargeldReceiveBtn">Empfangen</button>
+                <button class="bargeld-btn bargeld-btn--send" type="button" id="bargeldSendBtn">Senden</button>
+              </div>
+
+            </div>
+          </section>
+
+        </div>
+      </div>
+
+      <!-- Buy scrim -->
+      <div class="buy-scrim" aria-hidden="true"></div>
+
+      <!-- Buy sheet — two-step bottom sheet (Betrag → Bestätigen) -->
+      <div class="buy-sheet" data-step="none" role="dialog" aria-modal="true" aria-label="Bitcoin kaufen">
+        <div class="buy-sheet__handle" aria-hidden="true"></div>
+        <div class="buy-sheet__track">
+
+          <!-- Step 1: Amount -->
+          <div class="buy-sheet__step">
+            <p class="buy-sheet__section-label">Wieviel?</p>
+            <div class="buy-amount">
+              <div class="buy-amount__value" id="buyAmountDisplay">€100</div>
+              <div class="buy-amount__sats" id="buyAmountSats">≈ — Sats</div>
+            </div>
+            <div class="buy-chips">
+              <button class="buy-chip" data-amount="20" type="button">€20</button>
+              <button class="buy-chip" data-amount="50" type="button">€50</button>
+              <button class="buy-chip is-active" data-amount="100" type="button">€100</button>
+              <button class="buy-chip" data-amount="250" type="button">€250</button>
+            </div>
+            <button class="buy-sheet__custom-trigger" type="button" id="buyCustomTrigger">Eigenen Betrag</button>
+            <input class="buy-sheet__custom-input" type="number" inputmode="decimal"
+                   min="1" max="50000" step="1" placeholder="Betrag in €" id="buyCustomInput">
+            <button class="buy-sheet__next" type="button" id="buyNextBtn">Weiter</button>
+          </div>
+
+          <!-- Step 2: Confirm -->
+          <div class="buy-sheet__step">
+            <p class="buy-sheet__section-label">Bestätigen</p>
+            <div class="buy-summary">
+              <div class="buy-summary__amount" id="buyConfirmAmount">€100</div>
+              <div class="buy-summary__sats" id="buyConfirmSats">≈ — Sats</div>
+            </div>
+            <div class="buy-payment">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.2"
+                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="2" y="5" width="20" height="14" rx="2"/>
+                <line x1="2" y1="10" x2="22" y2="10"/>
+              </svg>
+              <span>Girokonto ●●●● 4242</span>
+            </div>
+            <div class="buy-sheet__actions">
+              <button class="buy-sheet__back" type="button" id="buyBackBtn">← Zurück</button>
+              <button class="buy-sheet__confirm" type="button" id="buyConfirmBtn">Jetzt kaufen</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Sell scrim -->
+      <div class="sell-scrim" aria-hidden="true"></div>
+
+      <!-- Sell sheet — two-step bottom sheet (Betrag → Bestätigen) -->
+      <div class="sell-sheet" data-step="none" role="dialog" aria-modal="true" aria-label="Bitcoin verkaufen">
+        <div class="sell-sheet__handle" aria-hidden="true"></div>
+        <div class="sell-sheet__track">
+
+          <!-- Step 1: Amount -->
+          <div class="sell-sheet__step">
+            <p class="sell-sheet__section-label">Wieviel?</p>
+            <div class="sell-amount">
+              <div class="sell-amount__value" id="sellAmountDisplay">€100</div>
+              <div class="sell-amount__sats" id="sellAmountSats">≈ — Sats</div>
+            </div>
+            <div class="sell-chips">
+              <button class="sell-chip" data-amount="20" type="button">€20</button>
+              <button class="sell-chip" data-amount="50" type="button">€50</button>
+              <button class="sell-chip is-active" data-amount="100" type="button">€100</button>
+              <button class="sell-chip" data-amount="250" type="button">€250</button>
+            </div>
+            <button class="sell-sheet__custom-trigger" type="button" id="sellCustomTrigger">Eigenen Betrag</button>
+            <input class="sell-sheet__custom-input" type="number" inputmode="decimal"
+                   min="1" max="50000" step="1" placeholder="Betrag in €" id="sellCustomInput">
+            <button class="sell-sheet__max" type="button" id="sellMaxBtn">Alles verkaufen</button>
+            <button class="sell-sheet__next" type="button" id="sellNextBtn">Weiter</button>
+          </div>
+
+          <!-- Step 2: Confirm -->
+          <div class="sell-sheet__step">
+            <p class="sell-sheet__section-label">Bestätigen</p>
+            <div class="sell-summary">
+              <div class="sell-summary__amount" id="sellConfirmAmount">€100</div>
+              <div class="sell-summary__sats" id="sellConfirmSats">≈ — Sats</div>
+            </div>
+            <div class="sell-payment">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.2"
+                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="2" y="5" width="20" height="14" rx="2"/>
+                <line x1="2" y1="10" x2="22" y2="10"/>
+              </svg>
+              <span>Auszahlung auf Girokonto ●●●● 4242</span>
+            </div>
+            <div class="sell-sheet__actions">
+              <button class="sell-sheet__back" type="button" id="sellBackBtn">← Zurück</button>
+              <button class="sell-sheet__confirm" type="button" id="sellConfirmBtn">Jetzt verkaufen</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Bargeld scrim -->
+      <div class="bargeld-scrim" id="bargeldScrim"></div>
+
+      <!-- Bargeld Send sheet — two steps -->
+      <div class="bargeld-sheet bargeld-send-sheet" id="bargeldSendSheet" data-step="1" role="dialog" aria-modal="true" aria-label="Bitcoin senden">
+        <div class="bargeld-sheet__handle"></div>
+        <div class="bargeld-send-track">
+
+          <!-- Step 1: Scan / paste -->
+          <div class="bargeld-send-step">
+            <p class="bargeld-sheet__title">Senden</p>
+            <div class="bargeld-scanner">
+              <span class="bargeld-scanner__corner bargeld-scanner__corner--tl"></span>
+              <span class="bargeld-scanner__corner bargeld-scanner__corner--tr"></span>
+              <span class="bargeld-scanner__corner bargeld-scanner__corner--bl"></span>
+              <span class="bargeld-scanner__corner bargeld-scanner__corner--br"></span>
+              <p class="bargeld-scanner__hint">Lightning-Rechnung scannen</p>
+            </div>
+            <p class="bargeld-sheet__or">oder</p>
+            <input class="bargeld-sheet__input" type="text" inputmode="text"
+                   placeholder="Lightning-Rechnung einfügen" id="bargeldInvoiceInput">
+            <button class="bargeld-sheet__btn bargeld-sheet__btn--primary" type="button" id="bargeldSendNextBtn">Weiter</button>
+            <button class="bargeld-sheet__btn bargeld-sheet__btn--ghost" type="button" id="bargeldSendClose">Abbrechen</button>
+          </div>
+
+          <!-- Step 2: Confirm -->
+          <div class="bargeld-send-step">
+            <p class="bargeld-sheet__title">Bestätigen</p>
+            <div class="bargeld-send-summary">
+              <div class="bargeld-send-summary__sats">1.200 Sats</div>
+              <div class="bargeld-send-summary__dest">Kaffeebar Berlin</div>
+              <div class="bargeld-send-summary__eur">≈ 1,20 €</div>
+            </div>
+            <button class="bargeld-sheet__btn bargeld-sheet__btn--primary" type="button" id="bargeldSendConfirmBtn">Jetzt senden</button>
+            <button class="bargeld-sheet__btn bargeld-sheet__btn--ghost" type="button" id="bargeldSendBackBtn">← Zurück</button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Bargeld Receive sheet -->
+      <div class="bargeld-sheet" id="bargeldReceiveSheet" role="dialog" aria-modal="true" aria-label="Bitcoin empfangen">
+        <div class="bargeld-sheet__handle"></div>
+        <p class="bargeld-sheet__title">Empfangen</p>
+        <div class="bargeld-ticket">
+          <svg class="bargeld-qr__code" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <rect width="100" height="100" fill="white"/>
+            <!-- TL finder -->
+            <rect x="8" y="8" width="26" height="26" fill="#1A2028" rx="2"/>
+            <rect x="13" y="13" width="16" height="16" fill="white"/>
+            <rect x="16" y="16" width="10" height="10" fill="#1A2028"/>
+            <!-- TR finder -->
+            <rect x="66" y="8" width="26" height="26" fill="#1A2028" rx="2"/>
+            <rect x="71" y="13" width="16" height="16" fill="white"/>
+            <rect x="74" y="16" width="10" height="10" fill="#1A2028"/>
+            <!-- BL finder -->
+            <rect x="8" y="66" width="26" height="26" fill="#1A2028" rx="2"/>
+            <rect x="13" y="71" width="16" height="16" fill="white"/>
+            <rect x="16" y="74" width="10" height="10" fill="#1A2028"/>
+            <!-- Data dots -->
+            <rect x="42" y="8" width="4" height="4" fill="#1A2028"/>
+            <rect x="50" y="8" width="4" height="4" fill="#1A2028"/>
+            <rect x="58" y="8" width="4" height="4" fill="#1A2028"/>
+            <rect x="42" y="14" width="4" height="4" fill="#1A2028"/>
+            <rect x="54" y="14" width="4" height="4" fill="#1A2028"/>
+            <rect x="42" y="20" width="4" height="4" fill="#1A2028"/>
+            <rect x="58" y="20" width="4" height="4" fill="#1A2028"/>
+            <rect x="8" y="42" width="4" height="4" fill="#1A2028"/>
+            <rect x="20" y="42" width="4" height="4" fill="#1A2028"/>
+            <rect x="8" y="50" width="4" height="4" fill="#1A2028"/>
+            <rect x="14" y="50" width="4" height="4" fill="#1A2028"/>
+            <rect x="20" y="50" width="4" height="4" fill="#1A2028"/>
+            <rect x="8" y="56" width="4" height="4" fill="#1A2028"/>
+            <rect x="20" y="56" width="4" height="4" fill="#1A2028"/>
+            <rect x="42" y="42" width="4" height="4" fill="#1A2028"/>
+            <rect x="50" y="48" width="4" height="4" fill="#1A2028"/>
+            <rect x="60" y="42" width="4" height="4" fill="#1A2028"/>
+            <rect x="66" y="48" width="4" height="4" fill="#1A2028"/>
+            <rect x="74" y="42" width="4" height="4" fill="#1A2028"/>
+            <rect x="42" y="54" width="4" height="4" fill="#1A2028"/>
+            <rect x="66" y="56" width="4" height="4" fill="#1A2028"/>
+            <!-- Bitcoin mark in center -->
+            <circle cx="58" cy="60" r="11" fill="#F7931A"/>
+            <text x="58" y="65" text-anchor="middle" font-size="14" font-weight="900" fill="white" font-family="sans-serif">₿</text>
+          </svg>
+          <hr class="bargeld-ticket__divider">
+          <p class="bargeld-sheet__address" id="bargeldAddress">peter@bitcoinbank.de</p>
+        </div>
+        <button class="bargeld-sheet__btn bargeld-sheet__btn--primary" type="button" id="bargeldCopyBtn">Kopieren</button>
+        <button class="bargeld-sheet__btn bargeld-sheet__btn--ghost" type="button" id="bargeldReceiveClose">Schließen</button>
+      </div>
+
+      <!-- Bargeld Aufladen sheet -->
+      <div class="bargeld-sheet" id="bargeldAufladenSheet" role="dialog" aria-modal="true" aria-label="Sats aufladen">
+        <div class="bargeld-sheet__handle"></div>
+        <p class="bargeld-sheet__title">Aufladen</p>
+        <div class="bargeld-aufladen-display">
+          <div class="bargeld-aufladen-display__eur" id="aufladenEur">10,00 €</div>
+          <div class="bargeld-aufladen-display__sats" id="aufladenSats">≈ – Sats</div>
+        </div>
+        <div class="bargeld-aufladen-chips">
+          <button class="bargeld-aufladen-chip" data-eur="5" type="button">5 €</button>
+          <button class="bargeld-aufladen-chip is-active" data-eur="10" type="button">10 €</button>
+          <button class="bargeld-aufladen-chip" data-eur="25" type="button">25 €</button>
+          <button class="bargeld-aufladen-chip" data-eur="50" type="button">50 €</button>
+        </div>
+        <input class="bargeld-sheet__input" id="aufladenCustom" type="number" min="1" step="1" placeholder="Eigener Betrag in €">
+        <button class="bargeld-sheet__btn bargeld-sheet__btn--primary" type="button" id="bargeldAufladenConfirm">Übertragen</button>
+        <button class="bargeld-sheet__btn bargeld-sheet__btn--ghost" type="button" id="bargeldAufladenClose">Abbrechen</button>
+      </div>
+
+      <nav class="room-switcher" aria-label="Bereich wählen">
+        <span class="room-switcher__pill" aria-hidden="true"></span>
+        <button class="room-switcher__btn" type="button" data-room="bildung" aria-label="Bildung">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M2 9 L12 4 L22 9 L12 14 Z"/>
+            <path d="M6 11 V16 C6 17.5 9 19 12 19 C15 19 18 17.5 18 16 V11"/>
+          </svg>
+        </button>
+        <button class="room-switcher__btn" type="button" data-room="bank" aria-current="page" aria-label="Bank">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3 9 L12 4 L21 9"/>
+            <line x1="3" y1="20" x2="21" y2="20"/>
+            <line x1="6" y1="9" x2="6" y2="18"/>
+            <line x1="12" y1="9" x2="12" y2="18"/>
+            <line x1="18" y1="9" x2="18" y2="18"/>
+          </svg>
+        </button>
+        <button class="room-switcher__btn" type="button" data-room="bargeld" aria-label="Bargeld">
+          <!-- Lightning bolt — Bargeld is Lightning -->
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M13 2 L4 13 H10 L9 22 L20 11 H14 Z"/>
+          </svg>
+        </button>
+      </nav>
+
+      <div class="lesson-modal" data-open="false" role="dialog" aria-modal="true" aria-labelledby="lessonTitle">
+        <div class="lesson-modal-frame">
+          <header class="lesson-modal-header">
+            <span class="lesson-modal-title" id="lessonTitle"></span>
+            <span class="lesson-modal-counter"></span>
+            <button class="lesson-modal-close" type="button" aria-label="Schließen">&times;</button>
+          </header>
+          <div class="lesson-modal-track"></div>
+          <nav class="lesson-modal-nav">
+            <button class="lesson-modal-prev" type="button">Zurück</button>
+            <button class="lesson-modal-next" type="button">Weiter</button>
+          </nav>
+        </div>
+      </div>
+
+      <div class="newspaper-modal" data-open="false" aria-hidden="true">
+        <div class="newspaper-page" role="dialog" aria-modal="true" aria-label="Bitcoin Tagesblatt">
+          <button class="newspaper-close" type="button" aria-label="Schließen">&times;</button>
+          <header class="newspaper-masthead">
+            <div class="meta">No. 1 &middot; Jahrgang I &middot; Pfennig 1</div>
+            <h1>Bitcoin Tagesblatt</h1>
+            <div class="meta newspaper-date"></div>
+          </header>
+          <div class="newspaper-track-wrap">
+            <div class="newspaper-track">
+              <article class="newspaper-content">
+                <div class="kicker">Aufmacher</div>
+                <h2>Was Peter heute interessiert</h2>
+                <p class="lead">Berlin, an einem Freitagmorgen — der Wechselkurs flackert, das Brot kostet wie immer.</p>
+                <div class="photo"></div>
+                <p class="caption">Münzen am Tresen.</p>
+                <div class="columns">
+                  <p>Während die Zentralbanken sich beraten, fließt das Geld weiter. Ein Bäcker in Kreuzberg sagt: „Ich kenne noch die D-Mark. Das hier verstehe ich besser."</p>
+                  <p>Vier von zehn Menschen in Deutschland geben an, schon einmal von Bitcoin gehört zu haben. Verstanden hat es jeder Vierte. Den Rest erklärt der Bäcker.</p>
+                  <p>Ein Handwerksmeister aus Leipzig: „Erst dachte ich, das ist nur was für Zocker. Dann habe ich verstanden, dass es Sparen ist. Jetzt lege ich jeden Monat etwas weg."</p>
+                </div>
+              </article>
+              <article class="newspaper-content">
+                <div class="kicker">Wirtschaft</div>
+                <h2>Nicht jede Münze ist Geld</h2>
+                <p class="lead">Über die Knappheit, die nur Bitcoin hat — und warum der Goldbarren im Schrank ein Trostpreis bleibt.</p>
+                <div class="columns">
+                  <p>Tausende Kryptowährungen versuchen ihr Glück. Die meisten haben einen Chef, einen Marketing-Plan, ein Whitepaper voller Versprechen. Sie kommen, sie gehen.</p>
+                  <p>Bitcoin hat keinen Chef. Niemand kann den Code im Alleingang ändern, niemand kann einfach mehr drucken. Die Regeln stehen seit dem 3. Januar 2009.</p>
+                  <p>Knappheit ist kein Feature unter vielen. Knappheit ist die Sache.</p>
+                  <p>Wer das einmal verstanden hat, sieht den Euro mit anderen Augen — nicht feindlich, nur klarer.</p>
+                </div>
+              </article>
+              <article class="newspaper-content">
+                <div class="kicker">Vermischtes</div>
+                <h2>Wo man heute mit Bitcoin zahlt</h2>
+                <p class="lead">Drei Cafés in Berlin. Ein Friseur in Hamburg. Eine Bäckerei in München. Eine Buchhandlung in Frankfurt.</p>
+                <div class="photo"></div>
+                <p class="caption">Lightning-Code an der Kasse.</p>
+                <div class="columns">
+                  <p>Lightning, das schnelle Netz auf Bitcoin, macht Cappuccino-Bezahlen möglich. Sekunden, nicht Minuten. Cents, nicht Euros.</p>
+                  <p>In El Salvador zahlt man den Bus damit. In Argentinien rettet es Ersparnisse, wenn der Peso einbricht. In Deutschland wächst es leise — Laden um Laden.</p>
+                  <p>Die Frage ist nicht, ob Bitcoin Geld wird. Die Frage ist, wann es so selbstverständlich ist wie eine Kartenzahlung.</p>
+                </div>
+              </article>
+            </div>
+          </div>
+          <footer class="newspaper-footer">
+            <span class="newspaper-page-number">1 / 3</span>
+          </footer>
+          <div class="newspaper-edge newspaper-edge--prev" role="button" aria-label="Vorherige Seite" aria-disabled="true"></div>
+          <div class="newspaper-edge newspaper-edge--next" role="button" aria-label="Nächste Seite" aria-disabled="false"></div>
+        </div>
+      </div>
+    </div>
+
+    <button class="preview-tools__launcher" type="button" aria-expanded="false" aria-controls="preview-tools" data-tools-toggle>
+      <span class="preview-tools__dot" aria-hidden="true"></span> Demo
+    </button>
+
+    <aside class="preview-tools" id="preview-tools" aria-label="Demo-Steuerung">
+      <div class="preview-tools__head">
+        <p class="preview-tools__heading">Demo steuern</p>
+        <button class="preview-tools__close" type="button" aria-label="Schließen" data-tools-toggle>&times;</button>
+      </div>
+
+      <p class="preview-tools__title">Kaufen</p>
+      <div class="preview-tools__grid">
+        <button class="preview-toggle" type="button" data-buy-satoshi>+1 Sat</button>
+        <button class="preview-toggle" type="button" data-buy-talers="1">+1 Taler</button>
+        <button class="preview-toggle" type="button" data-buy-talers="10">+10 Taler</button>
+        <button class="preview-toggle" type="button" data-buy-talers="100">+100 Taler</button>
+        <button class="preview-toggle" type="button" data-buy-talers="1000">+1.000 Taler</button>
+        <button class="preview-toggle" type="button" data-buy-talers="10000">+10.000 Taler</button>
+      </div>
+
+      <p class="preview-tools__title">Münzhaufen</p>
+      <div class="preview-tools__grid">
+        <button class="preview-toggle" type="button" data-preview-coins="0">Leer</button>
+        <button class="preview-toggle" type="button" data-preview-coins="9">Andenken</button>
+        <button class="preview-toggle" type="button" data-preview-coins="90">Häufchen</button>
+        <button class="preview-toggle is-active" type="button" data-preview-coins="700">Berg</button>
+        <button class="preview-toggle" type="button" data-preview-coins="3000">Schatzkammer</button>
+        <button class="preview-toggle" type="button" data-preview-coins="12000">Dagobert</button>
+      </div>
+    </aside>
+  </div>
+
+  <script type="module" src="scripts/main.js"></script>
+  <script>
+    // Collapsible demo panel — preview chrome, not app logic. The launcher and the
+    // close button share [data-tools-toggle]; body.tools-open drives the CSS.
+    (function () {
+      var launcher = document.querySelector('.preview-tools__launcher');
+      function setOpen(open) {
+        document.body.classList.toggle('tools-open', open);
+        if (launcher) launcher.setAttribute('aria-expanded', open ? 'true' : 'false');
+      }
+      document.querySelectorAll('[data-tools-toggle]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          setOpen(!document.body.classList.contains('tools-open'));
+        });
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') setOpen(false);
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+# macOS
+.DS_Store
+
+# Private — kept locally, never published to this public repo
+CLAUDE.md
+docs/
+design/decisions/
+
+# Claude Code local state
+.claude/
+.claude-screenshots/
+
+# Editor / OS noise
+*.log
+.vscode/
+.idea/
+
+# Forward-looking (not yet present)
+node_modules/
+.env
+.env.*
+
+# Source phone photos — keep the converted versions in design/
+*.HEIC
+*.heic

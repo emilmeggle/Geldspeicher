@@ -1,0 +1,292 @@
+    :root {
+      --stone: #455260;
+      --stone-open: #3D5470;
+      --bildung-green: #4A6B52;
+      --bargeld-yellow: #9A8235;
+      --halftone: rgba(245,235,210,0.08);
+      --label: #98A6B5;
+      --num: #F5EDD8;
+      --pill: #6E8194;
+      --accent: #F7931A;
+      --outline: #1A2028;
+      --shadow: #1A2028;
+      --button-fg: #1A2028;
+      --room-ease: cubic-bezier(.22,.9,.28,1);
+      --room-duration: 460ms;
+
+      /* Taler atom — colour tokens. Solid fills, no gradients. The Taler design
+         from coin-compare.html uses these via var() so we can recolour the entire
+         pile without re-rendering geometry. */
+      --coin-face:        #F8C247;
+      --coin-rim:         #A86512;
+      --coin-rim-shadow:  #5C3D24;
+      --coin-highlight:   #FFE6A0;
+      --coin-stamp:       #1A2028;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      background: #111;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+      color: var(--num);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+    body { display: grid; place-items: center; padding: 24px; }
+    button { font: inherit; }
+
+    .preview-shell {
+      display: grid;
+      place-items: center;
+    }
+
+    /* Floating launcher — the demo controls collapse behind this pill, bottom-right,
+       so the standalone preview reads as a clean phone. */
+    .preview-tools__launcher {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 55;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 2.5px solid var(--outline);
+      border-radius: 999px;
+      background: #28313C;
+      color: var(--num);
+      font-size: 13px;
+      font-weight: 850;
+      letter-spacing: 0.02em;
+      padding: 11px 17px;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.42), 0 4px 0 var(--shadow);
+      transition: transform 0.1s, box-shadow 0.1s, opacity 0.18s;
+    }
+    .preview-tools__launcher:active {
+      transform: translateY(3px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.42), 0 1px 0 var(--shadow);
+    }
+    .preview-tools__dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 0 2px var(--outline);
+    }
+    body.tools-open .preview-tools__launcher { opacity: 0; pointer-events: none; }
+
+    /* The panel itself — fixed overlay, anchored to the launcher corner, hidden by default. */
+    .preview-tools {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 60;
+      width: 286px;
+      max-height: calc(100dvh - 110px);
+      overflow-y: auto;
+      color: var(--num);
+      border: 2.5px solid var(--outline);
+      border-radius: 20px;
+      background: #28313C;
+      box-shadow: 0 16px 38px rgba(0,0,0,0.5), 0 5px 0 var(--shadow);
+      padding: 15px 15px 17px;
+      transform-origin: bottom right;
+      transform: translateY(14px) scale(0.97);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.18s ease, transform 0.2s var(--room-ease), visibility 0.2s;
+    }
+    body.tools-open .preview-tools {
+      transform: none;
+      opacity: 1;
+      visibility: visible;
+    }
+    .preview-tools__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 13px;
+    }
+    .preview-tools__heading {
+      font-size: 14px;
+      font-weight: 900;
+      color: var(--num);
+    }
+    .preview-tools__close {
+      border: none;
+      background: transparent;
+      color: var(--label);
+      font-size: 23px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0 2px;
+      transition: color 0.16s;
+    }
+    .preview-tools__close:hover { color: var(--num); }
+    .preview-tools__title {
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--label);
+      margin: 2px 0 9px;
+    }
+    .preview-tools__grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+    .preview-tools__grid:last-child { margin-bottom: 0; }
+    .preview-toggle {
+      width: 100%;
+      border: 2px solid var(--outline);
+      border-radius: 999px;
+      background: #627080;
+      color: var(--num);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 850;
+      padding: 9px 8px;
+      box-shadow: 0 3px 0 var(--shadow);
+      transition: transform 0.08s, box-shadow 0.08s, background-color 0.16s;
+    }
+    .preview-toggle.is-active {
+      background: var(--accent);
+      color: var(--button-fg);
+    }
+    .preview-toggle:active {
+      transform: translateY(3px);
+      box-shadow: 0 0 0 var(--shadow);
+    }
+
+    /* Embed mode — showcase iframes the phone alone, over its own background. */
+    html.is-embed,
+    html.is-embed body { padding: 0; background: transparent; }
+    html.is-embed .preview-tools,
+    html.is-embed .preview-tools__launcher { display: none !important; }
+    /* On a light presentation stage the near-black shadow reads as a heavy blob —
+       cool it down and lift the device so it floats like a product shot. */
+    /* The showcase wraps this screen in a real iPhone body, so the screen itself
+       carries no bezel or shadow here — just its own rounded corners. */
+    html.is-embed .phone { box-shadow: none; }
+    /* The showcase renders the vault door in its OWN page layer (desktop) so it can swing out
+       past the phone frame. Hide the in-iframe door there to avoid a double; the hinges stay.
+       On mobile the parent adds .door-inline to re-show the in-iframe door (no breakout). */
+    html.is-embed:not(.door-inline) .vault-door-layer { display: none !important; }
+
+    .phone {
+      --screen-halftone: var(--halftone);
+      width: 393px;
+      height: 852px;
+      background-color: var(--stone);
+      background-image:
+        repeating-linear-gradient(135deg, rgba(15,22,30,0.10) 0 1px, transparent 1px 7px),
+        radial-gradient(circle, var(--screen-halftone) 1px, transparent 1.6px);
+      background-size: 7px 7px, 16px 16px;
+      background-position: 0 0, 8px 8px;
+      border-radius: 48px;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 0 10px #1d1d1f;
+      transition: background-color var(--room-duration) var(--room-ease);
+    }
+    .phone[data-room="bildung"] { background-color: var(--bildung-green); }
+    .phone[data-room="bargeld"] { background-color: var(--bargeld-yellow); }
+    .phone[data-room="bank"][data-mode="vault-open"] {
+      --screen-halftone: rgba(245,235,210,0.11);
+      background-color: var(--stone-open);
+      transition-delay: 300ms;
+    }
+
+    /* Sky layer — ambient, lives on the phone (not in any room).
+       Crossfades with the canvas color on data-room change.
+       The sky-blue and the hill ridge stay fixed; only the SVG content slides/scrolls. */
+    .phone-sky {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 280px;
+      background-color: #8DCBE8;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--room-duration) var(--room-ease);
+      z-index: 0;
+    }
+    .phone[data-room="bildung"] .phone-sky { opacity: 1; }
+    .phone-sky-scene {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .rooms-viewport {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+    .rooms-track {
+      display: flex;
+      width: 300%;
+      height: 100%;
+      transform: translateX(-33.3333%);
+      transition: transform var(--room-duration) var(--room-ease);
+      will-change: transform;
+    }
+    .phone[data-room="bildung"] .rooms-track { transform: translateX(0%); }
+    .phone[data-room="bank"]    .rooms-track { transform: translateX(-33.3333%); }
+    .phone[data-room="bargeld"] .rooms-track { transform: translateX(-66.6666%); }
+
+    .room {
+      flex: 0 0 33.3333%;
+      width: 33.3333%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      padding: 0 28px 24px;
+      background: transparent;
+    }
+
+    .room-placeholder {
+      margin: auto;
+      text-align: center;
+      color: var(--num);
+      opacity: 0.78;
+      font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
+    }
+    .room-placeholder__title {
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: 0.4px;
+      margin-bottom: 8px;
+      text-shadow: 0 2px 0 rgba(15,22,30,0.35);
+    }
+    .room-placeholder__sub {
+      font-size: 14px;
+      opacity: 0.7;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 1ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 1ms !important;
+        transition-delay: 0ms !important;
+      }
+    }
+
+    @media (max-width: 720px) {
+      body { padding: 0; background: var(--stone); }
+      .preview-shell { display: block; width: 100vw; height: 100dvh; }
+      .preview-tools,
+      .preview-tools__launcher { display: none; }
+      .phone { width: 100vw; height: 100dvh; border-radius: 0; box-shadow: none; }
+    }

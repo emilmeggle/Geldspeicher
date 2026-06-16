@@ -1,0 +1,433 @@
+/* Bargeld screen */
+.bargeld-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+/* Balance block — centered */
+.bargeld-balance-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding-bottom: 32px;
+}
+
+/* EUR — primary big number */
+.bargeld-eur {
+  font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
+  font-size: 64px;
+  font-weight: 900;
+  color: var(--num);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  text-shadow: 0 4px 0 rgba(26,32,40,0.35);
+}
+
+/* Sats — secondary small label */
+.bargeld-number {
+  font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--label);
+  font-variant-numeric: tabular-nums;
+  margin-top: 6px;
+  line-height: 1;
+}
+
+/* Aufladen text link */
+.bargeld-aufladen-link {
+  margin-top: 18px;
+  background: none;
+  border: none;
+  font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--num);
+  opacity: 0.55;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+  transition: opacity 0.12s;
+}
+.bargeld-aufladen-link:active { opacity: 1; }
+
+/* Two-button action row */
+.bargeld-actions {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  flex-shrink: 0;
+  margin-bottom: 6px;
+}
+
+.bargeld-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2.5px solid var(--outline);
+  border-radius: 999px;
+  padding: 18px 16px;
+  font-size: 18px;
+  font-weight: 900;
+  font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  box-shadow: 0 5px 0 var(--shadow);
+  transition: transform 0.08s, box-shadow 0.08s;
+}
+.bargeld-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 var(--shadow);
+}
+.bargeld-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.bargeld-btn--send {
+  background: var(--accent);
+  color: var(--button-fg);
+}
+.bargeld-btn--receive {
+  background: var(--stone);
+  color: var(--num);
+}
+
+/* ─── Bargeld Sheets ─── */
+
+.bargeld-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(26,32,40,0.55);
+  z-index: 60;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease;
+}
+.bargeld-scrim.is-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.bargeld-sheet {
+  position: absolute;
+  bottom: 0;
+  left: 0; right: 0;
+  background: #F0E8D0;
+  border-radius: 18px 18px 0 0;
+  border: 2.5px solid #1A2028;
+  border-bottom: none;
+  box-shadow: 0 -4px 0 #1A2028;
+  padding: 12px 20px 32px;
+  z-index: 70;
+  transform: translateY(105%);
+  transition: transform 0.32s cubic-bezier(.22,.9,.28,1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+.bargeld-sheet.is-active {
+  transform: translateY(0);
+}
+
+.bargeld-sheet__handle {
+  width: 36px;
+  height: 4px;
+  background: #1A2028;
+  border-radius: 2px;
+  opacity: 0.3;
+  flex-shrink: 0;
+}
+
+.bargeld-sheet__title {
+  font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
+  font-size: 21px;
+  font-weight: 900;
+  color: #1A2028;
+  margin: 0;
+}
+
+/* ─── Send sheet: QR scanner viewfinder ─── */
+.bargeld-scanner {
+  width: 200px;
+  height: 168px;
+  background: rgba(26,32,40,0.88);
+  border-radius: 12px;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 12px;
+  flex-shrink: 0;
+}
+.bargeld-scanner__hint {
+  font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
+  font-size: 11px;
+  color: rgba(245,237,216,0.55);
+  margin: 0;
+  text-align: center;
+}
+.bargeld-scanner__corner {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-color: #F7931A;
+  border-style: solid;
+  border-width: 0;
+  animation: cornerPulse 1.6s ease-in-out infinite;
+}
+.bargeld-scanner__corner--tl { top: 10px; left: 10px; border-top-width: 3px; border-left-width: 3px; border-radius: 3px 0 0 0; }
+.bargeld-scanner__corner--tr { top: 10px; right: 10px; border-top-width: 3px; border-right-width: 3px; border-radius: 0 3px 0 0; animation-delay: 0.4s; }
+.bargeld-scanner__corner--bl { bottom: 34px; left: 10px; border-bottom-width: 3px; border-left-width: 3px; border-radius: 0 0 0 3px; animation-delay: 0.8s; }
+.bargeld-scanner__corner--br { bottom: 34px; right: 10px; border-bottom-width: 3px; border-right-width: 3px; border-radius: 0 0 3px 0; animation-delay: 1.2s; }
+
+@keyframes cornerPulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+.bargeld-sheet__or {
+  font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
+  font-size: 13px;
+  color: #6B5B45;
+  margin: 0;
+  position: relative;
+  width: 100%;
+  text-align: center;
+}
+.bargeld-sheet__or::before,
+.bargeld-sheet__or::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 36%;
+  height: 1px;
+  background: rgba(26,32,40,0.2);
+}
+.bargeld-sheet__or::before { left: 0; }
+.bargeld-sheet__or::after { right: 0; }
+
+.bargeld-sheet__input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid #1A2028;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.65);
+  font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
+  font-size: 13px;
+  color: #1A2028;
+  box-sizing: border-box;
+}
+.bargeld-sheet__input::placeholder { color: #9C8B72; }
+.bargeld-sheet__input:focus { outline: 2px solid #F7931A; outline-offset: 0; border-color: transparent; }
+
+/* ─── Receive sheet: ticket frame ─── */
+.bargeld-ticket {
+  background: #F5EDD8;
+  border: 2.5px solid #1A2028;
+  border-radius: 10px;
+  box-shadow: 4px 4px 0 #1A2028;
+  padding: 14px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+.bargeld-ticket__divider {
+  width: calc(100% + 28px);
+  border: none;
+  border-top: 2px dashed rgba(26,32,40,0.28);
+  margin: 10px -14px;
+}
+.bargeld-qr__code {
+  width: 150px;
+  height: 150px;
+  display: block;
+  border-radius: 4px;
+}
+
+.bargeld-sheet__address {
+  font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
+  font-size: 12px;
+  color: #5C4A34;
+  margin: 0;
+  text-align: center;
+  word-break: break-all;
+}
+
+/* ─── Aufladen: live EUR/Sats display ─── */
+.bargeld-aufladen-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 0 6px;
+}
+.bargeld-aufladen-display__eur {
+  font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
+  font-size: 52px;
+  font-weight: 900;
+  color: #1A2028;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  text-shadow: 0 3px 0 rgba(26,32,40,0.22);
+}
+.bargeld-aufladen-display__sats {
+  font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 900;
+  color: #6B5B45;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Copy stamp spring animation */
+@keyframes copiedStamp {
+  0%   { transform: scale(0.75); opacity: 0.6; }
+  60%  { transform: scale(1.06); }
+  100% { transform: scale(1);    opacity: 1; }
+}
+.bargeld-sheet__btn.is-copied {
+  animation: copiedStamp 0.22s cubic-bezier(.34,1.56,.64,1) both;
+}
+
+/* ─── Send sheet: two-step track ─── */
+.bargeld-send-sheet {
+  gap: 0;
+  padding: 12px 0 32px;
+  overflow: hidden;
+}
+.bargeld-send-track {
+  display: flex;
+  width: 100%;
+  transition: transform 0.32s cubic-bezier(.22,.9,.28,1);
+}
+#bargeldSendSheet[data-step="1"] .bargeld-send-track { transform: translateX(0); }
+#bargeldSendSheet[data-step="2"] .bargeld-send-track { transform: translateX(-100%); }
+
+.bargeld-send-step {
+  flex: 0 0 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 0 20px;
+}
+
+/* Send summary card (step 2) */
+.bargeld-send-summary {
+  background: white;
+  border: 2.5px solid #1A2028;
+  border-radius: 10px;
+  box-shadow: 3px 3px 0 #1A2028;
+  padding: 18px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.bargeld-send-summary__sats {
+  font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
+  font-size: 32px;
+  font-weight: 900;
+  color: #1A2028;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.bargeld-send-summary__dest {
+  font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 900;
+  color: #6B5B45;
+}
+.bargeld-send-summary__eur {
+  font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
+  font-size: 13px;
+  color: #9C8B72;
+  margin-top: 2px;
+}
+
+/* ─── Aufladen sheet ─── */
+.bargeld-aufladen-subtitle {
+  font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
+  font-size: 13px;
+  color: #6B5B45;
+  margin: -8px 0 0;
+}
+.bargeld-aufladen-chips {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+}
+.bargeld-aufladen-chip {
+  padding: 14px 10px;
+  border: 2.5px solid #1A2028;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.55);
+  font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 900;
+  color: #1A2028;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #1A2028;
+  transition: transform 0.08s, box-shadow 0.08s, background 0.12s;
+  font-variant-numeric: tabular-nums;
+}
+.bargeld-aufladen-chip:active {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 #1A2028;
+}
+.bargeld-aufladen-chip.is-active {
+  background: var(--accent);
+  color: white;
+}
+.bargeld-aufladen-unit {
+  font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
+  font-size: 13px;
+  color: #9C8B72;
+  margin: -6px 0 0;
+}
+
+/* Sheet action buttons */
+.bargeld-sheet__btn {
+  width: 100%;
+  padding: 15px;
+  border: 2.5px solid #1A2028;
+  border-radius: 999px;
+  font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
+  font-size: 17px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #1A2028;
+  transition: transform 0.08s, box-shadow 0.08s;
+  text-align: center;
+}
+.bargeld-sheet__btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #1A2028;
+}
+.bargeld-sheet__btn--primary {
+  background: #F7931A;
+  color: white;
+}
+.bargeld-sheet__btn--ghost {
+  background: transparent;
+  color: #1A2028;
+  box-shadow: none;
+  border-color: transparent;
+  font-size: 15px;
+}
+.bargeld-sheet__btn--ghost:active {
+  transform: none;
+  box-shadow: none;
+}
