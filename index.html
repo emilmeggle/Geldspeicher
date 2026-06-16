@@ -185,7 +185,7 @@
      in the middle of the button it advertises. That centring offset is baked into the poke keyframes
      so there's no jump when the loop starts. */
   .tap-finger {
-    position: absolute; z-index: 6; left: 50%; top: 50%; width: 56px; height: 56px;
+    position: absolute; z-index: 6; left: 50%; top: calc(50% + 14px); width: 56px; height: 56px;
     transform: translate(-50%, -50%);
     pointer-events: none;                 /* never swallows the tap it advertises */
     opacity: 0;
@@ -342,9 +342,8 @@
     <div class="intro">
       <h1 class="headline reveal d1">Bitcoin.<br><em>Zum&nbsp;Anfassen.</em></h1>
       <p class="lede reveal d2">
-        Ich habe dieses Wallet-Design entworfen, um Bitcoin greifbarer zu machen — denn
-        das ist es, was das Digitale schwer ersetzen kann. Daher: kein Chart, sondern
-        ein Geldspeicher, der sich sichtbar füllt.
+        Dieses Wallet-Design wurde entworfen um Bitcoin greifbarer zu machen.
+        Kein Chart, sondern ein Geldspeicher, der sich füllt.
       </p>
     </div>
 
