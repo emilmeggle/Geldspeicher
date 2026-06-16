@@ -5,8 +5,8 @@
 <h1 align="center">Geldspeicher</h1>
 
 <p align="center">
-  A design study for a German Bitcoin wallet — a vault that visibly fills as you<br>
-  stack coins, instead of a price chart. Plain German, hand-drawn, calm.
+  A design study for a Bitcoin wallet — a vault that visibly fills as you<br>
+  stack coins, instead of a price chart.
 </p>
 
 <p align="center">
@@ -25,12 +25,6 @@
     <td align="center"><sub>Bargeld — pay</sub></td>
   </tr>
 </table>
-
-## Why it's different
-
-- **Vault, not chart.** Your sats grow as a visible pile in a stone vault — the pile *is* the chart. No daily change %, no red/green.
-- **Plain German.** No jargon, no crypto-bro chrome — a door anyone would dare open.
-- **The pile is the chart.** Six denominations, each ×10 — from a Satoshi coin up to a black 10-₿ medal.
 
 ![Six denominations](screenshots/units.png)
 
