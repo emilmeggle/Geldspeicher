@@ -73,21 +73,20 @@
   .stage {
     position: relative; z-index: 2; min-height: 100svh;
     display: grid;
-    grid-template-columns: auto auto;
-    grid-template-rows: auto auto;
-    grid-template-areas: "intro phone" "rail phone";
-    align-content: center; justify-content: center;
-    column-gap: clamp(14px, 1.8vw, 30px);
-    row-gap: clamp(14px, 2.4vh, 28px);
-    padding: clamp(24px, 4vh, 50px) clamp(20px, 3.4vw, 56px);
+    grid-template-columns: auto auto auto;
+    grid-template-areas: "intro phone rail";   /* text · phone · buttons — flanking, equidistant */
+    align-items: center; align-content: center; justify-content: center;
+    column-gap: clamp(16px, 2vw, 34px);
+    row-gap: clamp(16px, 2.6vh, 32px);
+    padding: clamp(40px, 7.5vh, 92px) clamp(20px, 3.4vw, 56px);
     text-align: left;
   }
-  .intro { grid-area: intro; align-self: start; width: 100%; max-width: 440px; }
-  .units { grid-area: rail; align-self: end; justify-self: end; } /* buttons hug the phone, bottoms aligned with it */
+  .intro { grid-area: intro; align-self: start; width: 100%; max-width: 360px; } /* top-left, clear of the door's swing */
+  .units { grid-area: rail; align-self: center; justify-self: start; }            /* right of the phone, 24px gap */
   .device-wrap { grid-area: phone; align-self: center; justify-self: center; }
   .headline {
     font-family: var(--serif); font-weight: 500;
-    font-size: clamp(1.95rem, 4.6vw, 3.1rem); line-height: 1.08; letter-spacing: -0.01em;
+    font-size: clamp(2.05rem, 4.8vw, 3.2rem); line-height: 1.04; letter-spacing: -0.012em;
     color: var(--num); text-shadow: 0 2px 30px rgba(0,0,0,0.4);
   }
   .headline em { font-style: normal; color: var(--accent); }
@@ -142,19 +141,19 @@
   .floor { position: absolute; left: 50%; bottom: 0%; transform: translateX(-50%); width: 60%; height: 26px; z-index: 1; background: radial-gradient(ellipse at center, rgba(0,0,0,0.72) 0%, transparent 72%); filter: blur(12px); }
 
   /* ── Side rail of unit-adders ────────────────────────────────── */
-  .units { display: flex; flex-direction: column; gap: 6px; }
+  .units { display: flex; flex-direction: column; gap: 8px; position: relative; }
   .unit {
-    font-family: var(--sans); font-weight: 600; font-size: 0.77rem;
+    font-family: var(--sans); font-weight: 600; font-size: 0.94rem;
     color: var(--num-soft); background: rgba(245,237,216,0.05);
-    border: 1px solid rgba(245,237,216,0.12); border-radius: 11px;
-    padding: 6px 12px 6px 7px; cursor: pointer; white-space: nowrap;
-    display: flex; align-items: center; gap: 8px; width: 100%; min-width: 148px;
+    border: 1px solid rgba(245,237,216,0.12); border-radius: 14px;
+    padding: 10px 16px 10px 11px; cursor: pointer; white-space: nowrap;
+    display: flex; align-items: center; gap: 11px; width: 100%; min-width: 188px;
     transition: color 0.16s, background 0.16s, transform 0.1s, border-color 0.16s;
   }
   .unit:hover { color: var(--num); background: rgba(245,237,216,0.09); transform: translateX(-2px); }
   .unit:active { transform: translateX(1px); }
-  .unit__glyph { width: 21px; height: 21px; flex: none; display: block; }
-  .unit__emoji { width: 21px; flex: none; text-align: center; font-size: 15px; line-height: 1; }
+  .unit__glyph { width: 27px; height: 27px; flex: none; display: block; }
+  .unit__emoji { width: 27px; flex: none; text-align: center; font-size: 19px; line-height: 1; }
   .unit__name { flex: 1; text-align: left; }
   .unit__add { color: var(--muted); font-weight: 600; }
   .unit:hover .unit__add { color: var(--num-soft); }
@@ -174,6 +173,18 @@
   }
   .unit--reset:hover { background: rgba(206,74,58,0.21); color: #F2C5BA; }
 
+  /* Playful hint that points at the buttons (animates in after load). */
+  .cta {
+    position: absolute; bottom: calc(100% + 2px); right: 2px; width: 184px;
+    text-align: right; pointer-events: none;
+    opacity: 0; transform: translateY(-12px);
+    animation: ctaIn 0.6s cubic-bezier(.2,.8,.2,1) 1.5s forwards;
+  }
+  .cta__text { display: block; font-family: var(--serif); font-style: italic; font-weight: 500; font-size: 1.05rem; line-height: 1.2; color: var(--num); }
+  .cta__arrow { display: block; width: 56px; height: auto; margin: 3px 8px 0 auto; animation: ctaBob 1.7s ease-in-out 2.3s infinite; }
+  @keyframes ctaIn { to { opacity: 1; transform: translateY(0); } }
+  @keyframes ctaBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+
   /* Mobile/tablet (<860px): stack — text on top, rail beside the phone below. */
   @media (max-width: 860px) {
     .stage {
@@ -188,11 +199,12 @@
     .intro { max-width: none; }
     .units { align-self: start; }
     .device-wrap { align-self: start; }
+    .cta { display: none; } /* no room for the left-pointing hint when the rail is beside the phone */
   }
   @media (max-width: 760px) {
-    .unit { min-width: 0; font-size: 0.72rem; padding: 5px 9px 5px 6px; gap: 6px; border-radius: 10px; }
-    .unit__glyph { width: 19px; height: 19px; }
-    .unit__emoji { width: 19px; font-size: 14px; }
+    .unit { min-width: 0; font-size: 0.8rem; padding: 7px 11px 7px 8px; gap: 7px; border-radius: 11px; }
+    .unit__glyph { width: 22px; height: 22px; }
+    .unit__emoji { width: 22px; font-size: 15px; }
   }
 
   /* ── Feedback bubble + popup ─────────────────────────────────── */
@@ -344,6 +356,13 @@
         <span class="unit__emoji" aria-hidden="true">🧹</span>
         <span class="unit__name">Leeren</span>
       </button>
+      <div class="cta" aria-hidden="true">
+        <span class="cta__text">Spam-Klick&nbsp;um<br>Geld&nbsp;hinzuzufügen</span>
+        <svg class="cta__arrow" viewBox="0 0 70 78" fill="none">
+          <path d="M40 6 C 20 26, 56 40, 40 70" stroke="var(--accent)" stroke-width="4.5" stroke-linecap="round"/>
+          <path d="M40 70 L 29 61 M40 70 L 50 62" stroke="var(--accent)" stroke-width="4.5" stroke-linecap="round"/>
+        </svg>
+      </div>
     </div>
 
     <div class="device-wrap reveal">
