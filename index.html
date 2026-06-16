@@ -440,25 +440,69 @@
     // buttons — a deliberate flourish (Emil 2026-06-16: "it's a cool effect"). It runs on every
     // viewport now; on mobile the buttons are shrunk so a slice still peeks past the swung door, and
     // .bd-wrap is pointer-events:none so the buttons stay tappable even where the door covers them.
-    function updateDoorMode() {
+    // Two doors, one illusion. The IN-IFRAME door (.vault-door-layer, shown via `.door-inline`)
+    // is a child of the sliding room track, so it moves as one piece with the vault — it owns every
+    // resting/closed state and every room slide. The BREAKOUT door (page-layer overlay) is a pixel
+    // copy that can swing OUT past the phone frame over the add-money buttons — it owns only the
+    // open swing while resting on Bank. We hand off between them at the closed position, where the
+    // two are identical, so the swap is invisible. (Earlier the breakout owned everything, so on a
+    // room slide it floated detached from the vault — "statically appears, not one piece".)
+    let breakoutShown = false;     // is the breakout overlay the active door right now?
+    let swapTimer = null;          // pending close-swing → in-iframe handoff
+    function inIframeDoor(on) {     // on => show the in-iframe door (part of the vault)
       const w = pwin(); if (!w) return;
       let html; try { html = w.document.documentElement; } catch (e) { return; }
-      if (html) html.classList.remove('door-inline'); // hide the in-iframe door — breakout overlay owns the swing
-      bdWrap.style.display = '';                       // breakout on all viewports
+      if (html) html.classList.toggle('door-inline', on);
+    }
+    function toInIframeDoor() {     // breakout off, in-iframe door on (slides as one piece)
+      if (swapTimer) { clearTimeout(swapTimer); swapTimer = null; }
+      deviceWrap.classList.remove('door-open');
+      bdWrap.style.visibility = 'hidden';
+      inIframeDoor(true);
+      breakoutShown = false;
+    }
+    function openBreakout() {       // hand off to the breakout and swing it out
+      if (swapTimer) { clearTimeout(swapTimer); swapTimer = null; }
+      placeDoor();                                 // align the overlay over the vault exactly
       bdWrap.style.visibility = '';
-      placeDoor(); syncDoor();
+      deviceWrap.classList.remove('door-open');    // start flush on the vault…
+      inIframeDoor(false);                         // …hide the in-iframe copy (no double door)
+      void bdWrap.offsetWidth;                     // commit the closed baseline so the swing animates
+      deviceWrap.classList.add('door-open');       // …then swing out
+      breakoutShown = true;
     }
     function syncDoor() {
       const w = pwin(); if (!w) return;
       let phone; try { phone = w.document.querySelector('.phone'); } catch (e) { return; }
-      // The breakout door is a page-layer overlay pinned over the phone, so it doesn't slide away
-      // with the room. Hide it whenever we're not on the Bank room, else it floats over Bildung/Bargeld.
-      const onBank = !!phone && phone.getAttribute('data-room') === 'bank';
-      // Hide with visibility (not display:none) when off Bank so the overlay stays in the render
-      // tree — that keeps the door's swing transition's baseline alive, so the first open after
-      // returning to Bank animates normally instead of snapping.
-      bdWrap.style.visibility = onBank ? '' : 'hidden';
-      deviceWrap.classList.toggle('door-open', onBank && phone.getAttribute('data-mode') === 'vault-open');
+      const onBank = phone.getAttribute('data-room') === 'bank';
+      const open   = phone.getAttribute('data-mode') === 'vault-open';
+      if (onBank && open) {
+        openBreakout();
+      } else if (onBank && breakoutShown) {
+        // Closing while staying on Bank: let the breakout swing shut, then hand the closed door
+        // back to the in-iframe copy. Wait for transitionend (self-adapts to the swing time);
+        // fall back to a timer in case the event is missed.
+        deviceWrap.classList.remove('door-open');
+        if (swapTimer) clearTimeout(swapTimer);
+        const door = bdWrap.querySelector('.breakout-door');
+        const finish = () => {
+          door && door.removeEventListener('transitionend', onEnd);
+          const p = (pwin() && pwin().document.querySelector('.phone'));
+          if (p && p.getAttribute('data-room') === 'bank' && p.getAttribute('data-mode') !== 'vault-open') toInIframeDoor();
+        };
+        const onEnd = (e) => { if (e.propertyName === 'transform') finish(); };
+        door && door.addEventListener('transitionend', onEnd);
+        swapTimer = setTimeout(finish, 1000);
+      } else {
+        // Closed & resting, or any non-Bank room (incl. mid-slide): the in-iframe door is the door.
+        toInIframeDoor();
+      }
+    }
+    function updateDoorMode() {
+      bdWrap.style.display = '';     // overlay available on all viewports (shown only while open)
+      toInIframeDoor();             // boot: vault wears its in-iframe door
+      placeDoor();
+      syncDoor();
     }
     (function watchVault() {
       let tries = 0;
@@ -541,7 +585,8 @@
       if (!(s > 0)) return; // transient pre-layout measurement — skip
       s = Math.max(0.4, Math.min(s, 1.0));
       document.documentElement.style.setProperty('--s', s.toFixed(3));
-      updateDoorMode(); // re-place/toggle the breakout door (position derives from --s + iframe rect)
+      placeDoor(); // re-align the breakout overlay (geometry derives from --s + iframe rect); never
+                   // re-run the door state machine here, or a resize while open would re-swing.
     }
     fit();
     requestAnimationFrame(fit);
