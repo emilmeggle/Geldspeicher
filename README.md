@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="screenshots/logo-icon.png" width="124" alt="Geldspeicher">
+  
 </p>
 
 <h1 align="center">Geldspeicher</h1>
@@ -13,17 +13,6 @@
   <strong><a href="https://emilmeggle.github.io/Geldspeicher/">▶&nbsp; Live demo</a></strong>
 </p>
 
-<table>
-  <tr>
-    <td><img src="screenshots/bildung.png" width="220" alt="Bildung"></td>
-    <td><img src="screenshots/bank.png" width="220" alt="Bank"></td>
-    <td><img src="screenshots/bargeld.png" width="220" alt="Bargeld"></td>
-  </tr>
-  <tr>
-    <td align="center"><sub>Bildung — learn</sub></td>
-    <td align="center"><sub>Bank — hold</sub></td>
-    <td align="center"><sub>Bargeld — pay</sub></td>
-  </tr>
 </table>
 
 ![Six denominations](screenshots/units.png)
