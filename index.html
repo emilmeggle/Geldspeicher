@@ -231,49 +231,6 @@
     .unit__emoji { width: 22px; font-size: 15px; }
   }
 
-  /* ── Feedback bubble + popup ─────────────────────────────────── */
-  .fb { position: fixed; right: clamp(16px, 3vw, 30px); bottom: clamp(16px, 3vh, 28px); z-index: 80; }
-  .fb__bubble {
-    width: 56px; height: 56px; border-radius: 999px; padding: 0; cursor: pointer;
-    border: 2px solid rgba(245,237,216,0.2); background: #14201B; overflow: hidden;
-    box-shadow: 0 10px 26px -8px rgba(0,0,0,0.7), 0 0 0 0 rgba(247,147,26,0.4);
-    transition: transform 0.18s, box-shadow 0.2s, opacity 0.2s; animation: fbpulse 3.4s ease-out infinite;
-  }
-  .fb__bubble img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .fb__bubble:hover { transform: scale(1.06); }
-  @keyframes fbpulse { 0%{ box-shadow: 0 10px 26px -8px rgba(0,0,0,0.7), 0 0 0 0 rgba(247,147,26,0.45);} 70%{ box-shadow: 0 10px 26px -8px rgba(0,0,0,0.7), 0 0 0 12px rgba(247,147,26,0);} 100%{ box-shadow: 0 10px 26px -8px rgba(0,0,0,0.7), 0 0 0 0 rgba(247,147,26,0);} }
-  .fb.is-open .fb__bubble { opacity: 0; transform: scale(0.6); pointer-events: none; }
-
-  .fb__card {
-    position: absolute; right: 0; bottom: 0; width: min(330px, calc(100vw - 32px));
-    background: rgba(18,26,22,0.92); backdrop-filter: blur(20px) saturate(140%); -webkit-backdrop-filter: blur(20px) saturate(140%);
-    border: 1px solid rgba(245,237,216,0.14); border-radius: 22px; padding: 18px;
-    box-shadow: 0 28px 60px -18px rgba(0,0,0,0.85);
-    transform-origin: bottom right; transform: scale(0.82) translateY(14px); opacity: 0; visibility: hidden;
-    transition: transform 0.3s cubic-bezier(.2,.8,.2,1), opacity 0.26s ease, visibility 0.3s;
-  }
-  .fb.is-open .fb__card { transform: none; opacity: 1; visibility: visible; }
-  .fb__close { position: absolute; top: 12px; right: 14px; border: 0; background: transparent; color: var(--muted); font-size: 21px; line-height: 1; cursor: pointer; }
-  .fb__close:hover { color: var(--num); }
-  .fb__head { display: flex; align-items: center; gap: 11px; margin-bottom: 13px; }
-  .fb__head img { width: 42px; height: 42px; border-radius: 999px; object-fit: cover; border: 2px solid rgba(245,237,216,0.2); }
-  .fb__head b { font-family: var(--serif); font-weight: 600; font-size: 1.04rem; display: block; }
-  .fb__head span { color: var(--muted); font-size: 0.78rem; }
-  .fb__msg { color: var(--num-soft); font-size: 0.92rem; line-height: 1.5; margin-bottom: 12px; }
-  .fb__text {
-    width: 100%; min-height: 84px; resize: vertical; font: inherit; font-size: 0.9rem;
-    color: var(--num); background: rgba(0,0,0,0.28); border: 1px solid rgba(245,237,216,0.14);
-    border-radius: 12px; padding: 11px 12px; margin-bottom: 12px;
-  }
-  .fb__text::placeholder { color: var(--muted); }
-  .fb__text:focus { outline: none; border-color: var(--accent); }
-  .fb__send {
-    width: 100%; border: 0; border-radius: 999px; padding: 12px; cursor: pointer;
-    font: inherit; font-weight: 700; font-size: 0.92rem; color: #1A2028; background: var(--accent);
-    box-shadow: 0 6px 18px -6px rgba(247,147,26,0.6); transition: transform 0.12s;
-  }
-  .fb__send:hover { transform: translateY(-1px); }
-
   /* ── load reveal ─────────────────────────────────────────────── */
   .reveal { opacity: 0; transform: translateY(14px); animation: rise 1s cubic-bezier(.2,.7,.2,1) forwards; }
   .d1 { animation-delay: 0.06s; } .d2 { animation-delay: 0.18s; } .d3 { animation-delay: 0.32s; } .d4 { animation-delay: 0.5s; }
@@ -451,21 +408,6 @@
   </main>
 
   <!-- Feedback bubble -->
-  <div class="fb" id="fb">
-    <button class="fb__bubble" id="fbBubble" aria-label="Feedback geben" aria-expanded="false">
-      <img src="avatar.jpeg" alt="Avatar">
-    </button>
-    <div class="fb__card" role="dialog" aria-label="Feedback" aria-modal="false">
-      <button class="fb__close" id="fbClose" aria-label="Schließen">&times;</button>
-      <div class="fb__head">
-        <img src="avatar.jpeg" alt="">
-        <div><b>Emil</b><span>Design dieser Studie</span></div>
-      </div>
-      <p class="fb__msg">Was denkst du? Feedback, eine Idee oder Lust, mitzubauen?</p>
-      <textarea class="fb__text" id="fbText" placeholder="Deine Nachricht …"></textarea>
-      <button class="fb__send" id="fbSend">Senden</button>
-    </div>
-  </div>
 
   <script>
     // ── Drive the live phone (same-origin) ──
@@ -604,18 +546,6 @@
     frame.addEventListener('load', fit);
     [150, 450, 900].forEach((t) => setTimeout(fit, t)); // settle after layout + webfonts
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
-
-    // ── Feedback bubble ──
-    const fb = document.getElementById('fb');
-    const fbBubble = document.getElementById('fbBubble');
-    document.getElementById('fbBubble').addEventListener('click', () => { fb.classList.add('is-open'); fbBubble.setAttribute('aria-expanded', 'true'); document.getElementById('fbText').focus(); });
-    document.getElementById('fbClose').addEventListener('click', () => { fb.classList.remove('is-open'); fbBubble.setAttribute('aria-expanded', 'false'); });
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { fb.classList.remove('is-open'); fbBubble.setAttribute('aria-expanded', 'false'); } });
-    document.getElementById('fbSend').addEventListener('click', () => {
-      const msg = document.getElementById('fbText').value.trim();
-      const body = encodeURIComponent(msg || '');
-      window.location.href = 'mailto:emilmeggle@gmail.com?subject=' + encodeURIComponent('Geldspeicher — Feedback') + '&body=' + body;
-    });
 
     // ── Embers ──
     (function () {
