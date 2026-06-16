@@ -9,9 +9,9 @@
   stack coins, instead of a price chart.
 </p>
 
-<p align="center">
+<h1 align="center">
   <strong><a href="https://emilmeggle.github.io/Geldspeicher/">▶&nbsp; Live demo</a></strong>
-</p>
+</h1>
 
 </table>
 
