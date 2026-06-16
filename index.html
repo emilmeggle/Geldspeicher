@@ -445,6 +445,7 @@
       let html; try { html = w.document.documentElement; } catch (e) { return; }
       if (html) html.classList.remove('door-inline'); // hide the in-iframe door — breakout overlay owns the swing
       bdWrap.style.display = '';                       // breakout on all viewports
+      bdWrap.style.visibility = '';
       placeDoor(); syncDoor();
     }
     function syncDoor() {
@@ -453,7 +454,10 @@
       // The breakout door is a page-layer overlay pinned over the phone, so it doesn't slide away
       // with the room. Hide it whenever we're not on the Bank room, else it floats over Bildung/Bargeld.
       const onBank = !!phone && phone.getAttribute('data-room') === 'bank';
-      bdWrap.style.display = onBank ? '' : 'none';
+      // Hide with visibility (not display:none) when off Bank so the overlay stays in the render
+      // tree — that keeps the door's swing transition's baseline alive, so the first open after
+      // returning to Bank animates normally instead of snapping.
+      bdWrap.style.visibility = onBank ? '' : 'hidden';
       deviceWrap.classList.toggle('door-open', onBank && phone.getAttribute('data-mode') === 'vault-open');
     }
     (function watchVault() {
