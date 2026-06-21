@@ -169,9 +169,11 @@
     /* The showcase wraps this screen in a real iPhone body, so the screen itself
        carries no bezel or shadow here — just its own rounded corners. */
     html.is-embed .phone { box-shadow: none; }
-    /* The showcase renders the vault door in its OWN page layer (desktop) so it can swing out
-       past the phone frame. Hide the in-iframe door there to avoid a double; the hinges stay.
-       On mobile the parent adds .door-inline to re-show the in-iframe door (no breakout). */
+    /* Two doors, one illusion. The in-iframe door (shown via .door-inline) is part of the sliding
+       room, so it owns every closed/resting/sliding state on all viewports. For the open swing the
+       showcase hands off to its OWN page-layer door, which can swing out past the phone frame; while
+       that one is active .door-inline is removed, so the rule below hides the in-iframe door to avoid
+       a double. The hinges stay either way. */
     html.is-embed:not(.door-inline) .vault-door-layer { display: none !important; }
 
     .phone {
