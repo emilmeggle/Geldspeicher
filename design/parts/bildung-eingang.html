@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Bildung · Eingang — Prototyp</title>
+<style>
+  :root{
+    --num:#F5EDD8; --accent:#F7931A; --ink:#1A2028;
+    --sky:#36474A; --sky2:#2E3E45;
+    --forest:#1B2E26; --forest-far:#3a4f44; --forest-mid:#22382e; --forest-near:#0f1f18;
+    --path:#C2A878; --path-dim:#9C8F74;
+    --col:#313E34; --cap:#5C7A5E; --poster:#ECE3CC; --beam:#3A2C1E;
+    --green:#2E7D5B; --lock:#69707A;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+    background:radial-gradient(120% 90% at 50% 0%,#16231d 0%,#0a110d 70%);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#cdd6cf;padding:18px}
+  .tag{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#7d8d80}
+  .phone{position:relative;width:390px;height:780px;max-height:88vh;aspect-ratio:390/780;border-radius:46px;
+    background:linear-gradient(150deg,#34373C,#15171A);padding:13px;box-shadow:0 40px 80px -20px #000,inset 0 0 0 2px rgba(255,255,255,.07)}
+  .screen{position:relative;width:100%;height:100%;border-radius:34px;overflow:hidden;background:#16231d;cursor:default}
+
+  .scene{position:absolute;inset:0}
+  /* ---------- EINGANG ---------- */
+  .eingang{transform-origin:60% 52%;transition:transform 1.05s cubic-bezier(.6,.02,.2,1),opacity .8s ease}
+  .eingang.zoom{transform:scale(3.6);opacity:0;pointer-events:none}
+  .eingang .world{position:absolute;inset:-6%}
+  .layer{position:absolute;inset:0;will-change:transform}
+
+  .l-sky{background:linear-gradient(180deg,var(--sky2) 0%,var(--sky) 42%,var(--forest) 100%)}
+  .goal{position:absolute;left:50%;top:11%;width:46px;height:40px;transform:translateX(-50%);text-align:center}
+  .goal .glow{position:absolute;left:50%;top:46%;width:120px;height:120px;transform:translate(-50%,-50%);
+    background:radial-gradient(circle,rgba(247,147,26,.22),transparent 65%)}
+  .goal .b{position:absolute;left:50%;top:24%;width:30px;height:26px;transform:translateX(-50%);background:#2A3A38;border-radius:3px 3px 0 0}
+  .goal .dome{position:absolute;left:50%;top:14%;width:34px;height:14px;transform:translateX(-50%);background:#34302a;border-radius:18px 18px 0 0}
+  .goal .win{position:absolute;left:50%;top:40%;width:7px;height:7px;transform:translateX(-50%);border-radius:50%;background:#F7C76B;box-shadow:0 0 8px 2px rgba(247,199,107,.6)}
+
+  .l-forest{background:var(--forest)}
+  .fog{position:absolute;left:-10%;width:120%;height:120px;background:radial-gradient(60% 100% at 50% 50%,rgba(199,212,204,.22),transparent 72%);filter:blur(2px)}
+  .fog.f1{top:14%} .fog.f2{top:30%;opacity:.6} .fog.f3{top:46%;opacity:.4}
+
+  svg.firs{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+  /* path + opening (the "enter" cue) */
+  .pathlayer{transition:opacity .4s ease}
+  .opening{position:absolute;left:60%;top:52%;width:120px;height:96px;transform:translate(-50%,-50%);
+    background:radial-gradient(circle,rgba(247,199,107,.20),transparent 66%);transition:opacity .4s ease}
+  .hint{position:absolute;left:60%;top:40%;transform:translateX(-50%);display:flex;align-items:center;gap:6px;
+    padding:6px 11px;border-radius:20px;background:rgba(20,26,32,.6);color:var(--num);font-size:12.5px;font-weight:600;
+    white-space:nowrap;animation:bob 2.4s ease-in-out infinite;transition:opacity .4s ease}
+  @keyframes bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,-5px)}}
+  .pulse{position:absolute;left:60%;top:52%;width:26px;height:26px;transform:translate(-50%,-50%);border-radius:50%;
+    border:2px solid var(--accent);animation:pulse 1.9s ease-out infinite;opacity:0}
+  @keyframes pulse{0%{transform:translate(-50%,-50%) scale(.6);opacity:.7}100%{transform:translate(-50%,-50%) scale(2.6);opacity:0}}
+
+  /* enter hit zone — whole forest is tappable */
+  .enterzone{position:absolute;left:0;top:24%;width:100%;height:62%;cursor:pointer}
+  .enterzone:hover ~ .litfass{}
+  .eingang.hide .pathlayer,.eingang.hide .opening,.eingang.hide .hint{opacity:0}
+  .eingang.hide .pulse{opacity:0;animation:none}
+  .eingang.hide .ghosthint{opacity:0}
+  .ghosthint{position:absolute;left:50%;top:58%;transform:translate(-50%,-50%);color:rgba(245,237,216,.0);
+    font-size:13px;font-weight:600;letter-spacing:.05em;pointer-events:none;transition:opacity .35s ease;text-shadow:0 1px 6px #000}
+  .eingang.hide .enterzone:hover ~ .ghosthint{opacity:1;color:rgba(245,237,216,.85)}
+
+  /* Litfaßsäule (newsletter, foreground hero) */
+  .litfass{position:absolute;left:50%;bottom:2%;width:96px;height:300px;transform:translateX(-50%);cursor:pointer;z-index:5}
+  .litfass .cap{position:absolute;left:50%;top:0;width:96px;height:26px;transform:translateX(-50%);background:var(--cap);
+    border-radius:48px 48px 6px 6px;border:1.5px solid #14201a;box-shadow:inset 0 -3px 0 rgba(0,0,0,.18)}
+  .litfass .finial{position:absolute;left:50%;top:-9px;width:9px;height:14px;transform:translateX(-50%);background:var(--cap);border-radius:50% 50% 0 0;border:1px solid #14201a}
+  .litfass .shaft{position:absolute;left:50%;top:22px;width:90px;height:262px;transform:translateX(-50%);background:var(--col);
+    border:1.5px solid #14201a;border-radius:12px;box-shadow:inset 10px 0 18px rgba(255,255,255,.05),inset -14px 0 22px rgba(0,0,0,.35)}
+  .poster{position:absolute;left:50%;top:34px;width:72px;height:228px;transform:translateX(-50%);background:var(--poster);
+    border:1px solid #b7a985;border-radius:3px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:12px 6px;color:#2E2418;text-align:center}
+  .poster .badge{width:34px;height:34px;border-radius:50%;background:var(--accent);border:1.5px solid var(--ink);
+    display:flex;align-items:center;justify-content:center;color:var(--num);font-size:18px;font-weight:700;margin-bottom:2px}
+  .poster .mast{font-size:11px;font-weight:800;letter-spacing:.04em;line-height:1.05}
+  .poster .mast b{display:block;font-size:14px}
+  .poster hr{width:80%;border:0;border-top:1px solid #cbbd9e;margin:4px 0}
+  .poster .date{font-size:10.5px;color:#7A6A52}
+  .poster .head{font-size:11.5px;font-weight:700;line-height:1.15;margin-top:2px}
+  .poster .more{font-size:10.5px;color:#B5651D;margin-top:auto}
+  .litfass:active{transform:translateX(-50%) scale(.985)}
+
+  /* foreground side firs (near, frame) */
+  .l-near{z-index:4;pointer-events:none}
+
+  /* ---------- LERNPFAD ---------- */
+  .lernpfad{opacity:0;transform:scale(1.12);pointer-events:none;
+    transition:opacity .8s ease .15s,transform 1s cubic-bezier(.2,.7,.2,1) .15s;
+    background:linear-gradient(180deg,#557159 0%,#3f5a47 60%,#34503f 100%);overflow:hidden}
+  .lernpfad.show{opacity:1;transform:scale(1);pointer-events:auto}
+  .lp-sky{position:absolute;inset:0 0 auto 0;height:16%;background:#6A8FA8}
+  .summit{position:absolute;left:50%;top:7%;transform:translateX(-50%);text-align:center;color:var(--num)}
+  .summit .bld{width:74px;height:60px;margin:0 auto;background:#59636F;border:1.6px solid var(--ink);border-radius:4px;position:relative}
+  .summit .bld::before{content:"";position:absolute;left:50%;top:-15px;width:60px;height:18px;transform:translateX(-50%);background:#B0473B;border:1.5px solid var(--ink);border-radius:30px 30px 0 0}
+  .summit .disc{position:absolute;left:50%;top:14px;width:34px;height:34px;transform:translateX(-50%);border-radius:50%;background:var(--accent);border:1.6px solid var(--ink);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--ink);font-size:14px}
+  .summit .door{position:absolute;left:50%;bottom:0;width:20px;height:18px;transform:translateX(-50%);background:#F2C572;border:1.4px solid var(--ink);border-radius:5px 5px 0 0}
+  .progress{position:absolute;left:50%;top:20%;transform:translateX(-50%);background:rgba(20,26,32,.72);color:var(--num);font-size:12.5px;font-weight:600;padding:5px 13px;border-radius:20px}
+
+  .trail{position:absolute;left:0;right:0;top:24%;bottom:0}
+  .lp-path{position:absolute;inset:0;width:100%;height:100%}
+  .stop{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer}
+  .node{width:40px;height:40px;border-radius:50%;border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;color:var(--num);font-weight:700;font-size:16px;position:relative}
+  .node.done{background:var(--green)} .node.done::after{content:"✓";color:#EAF7EF;font-size:20px}
+  .node.locked{background:var(--lock)} .node.locked::after{content:"🔒";font-size:15px}
+  .node.current{background:var(--accent);width:46px;height:46px}
+  .node.current::after{content:"₿";color:var(--num);font-size:20px;font-weight:700}
+  .node.current .ring{position:absolute;inset:-8px;border-radius:50%;border:2.5px solid var(--accent);animation:pulse2 1.8s ease-out infinite}
+  @keyframes pulse2{0%{transform:scale(.8);opacity:.7}100%{transform:scale(1.5);opacity:0}}
+  .slabel{font-size:11.5px;font-weight:600;color:var(--num);background:rgba(20,26,32,.55);padding:3px 9px;border-radius:9px;white-space:nowrap}
+  .stop.locked .slabel{color:#aeb6ad;background:rgba(20,26,32,.4)}
+  .stop.current .slabel{background:rgba(247,147,26,.2);border:1px solid var(--accent)}
+  .youhere{position:absolute;top:-30px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--num);font-size:11px;font-weight:600;padding:3px 9px;border-radius:9px;white-space:nowrap}
+  .youhere::after{content:"";position:absolute;left:50%;bottom:-5px;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--ink)}
+
+  .kiosk{position:absolute;left:50%;bottom:2.5%;transform:translateX(-50%);width:200px;background:var(--beam);border:1.4px solid var(--ink);border-radius:6px;padding:7px;cursor:pointer}
+  .kiosk .inner{background:var(--poster);border-radius:3px;padding:8px 10px;text-align:center;color:#2E2418}
+  .kiosk .m{font-size:12px;font-weight:800;letter-spacing:.05em}
+  .kiosk .d{font-size:10.5px;color:#7A6A52;margin:2px 0 5px}
+  .kiosk .h{font-size:12px;font-weight:700}
+  .kiosk .more{font-size:10.5px;color:#B5651D;margin-top:3px}
+
+  .back{position:absolute;left:14px;top:14px;z-index:7;width:38px;height:38px;border-radius:50%;background:rgba(20,26,32,.62);color:var(--num);border:1.5px solid rgba(245,237,216,.25);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+  /* BOTE modal */
+  .modal{position:absolute;inset:0;z-index:20;background:rgba(8,12,10,.62);display:flex;align-items:center;justify-content:center;
+    opacity:0;pointer-events:none;transition:opacity .3s ease;padding:22px}
+  .modal.show{opacity:1;pointer-events:auto}
+  .paper{width:100%;max-height:86%;overflow:auto;background:var(--poster);border-radius:6px;border:2px solid var(--beam);
+    padding:18px 16px;color:#2A2014;transform:translateY(14px);transition:transform .3s ease;box-shadow:0 30px 60px -20px #000}
+  .modal.show .paper{transform:none}
+  .paper .x{position:absolute;top:30px;right:30px;width:30px;height:30px;border-radius:50%;border:1.5px solid #6b5a44;background:rgba(255,255,255,.4);color:#3A2C1E;font-size:16px;cursor:pointer}
+  .paper h1{font-family:Georgia,serif;font-size:26px;text-align:center;letter-spacing:.04em;border-bottom:3px double #3A2C1E;padding-bottom:7px}
+  .paper .sub{text-align:center;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#7A6A52;margin:6px 0 14px}
+  .paper h2{font-family:Georgia,serif;font-size:19px;line-height:1.2;margin-bottom:8px}
+  .paper p{font-size:13.5px;line-height:1.6;margin-bottom:10px;column-count:1}
+  .paper .lead{font-weight:700}
+
+  /* dev controls */
+  .dev{display:flex;align-items:center;gap:10px;font-size:13px;color:#9fb0a2}
+  .dev button{font:inherit;color:var(--num);background:#1d2a22;border:1px solid #3a4f44;border-radius:9px;padding:7px 13px;cursor:pointer}
+  .dev button.active{background:var(--accent);color:var(--ink);border-color:var(--accent);font-weight:700}
+  .note{font-size:11.5px;color:#6f7f72;max-width:390px;text-align:center;line-height:1.5}
+</style>
+</head>
+<body>
+  <div class="tag">Bildung · Eingang — Prototyp</div>
+
+  <div class="phone">
+    <div class="screen" id="screen">
+
+      <div class="scene eingang show-path" id="eingang">
+        <div class="world" id="world">
+          <div class="layer l-sky" data-depth="2"></div>
+          <div class="layer" data-depth="6">
+            <div class="goal"><div class="glow"></div><div class="dome"></div><div class="b"></div><div class="win"></div></div>
+          </div>
+          <div class="layer l-forest" data-depth="10"></div>
+          <div class="layer" data-depth="12">
+            <svg class="firs" viewBox="0 0 390 780" preserveAspectRatio="xMidYMid slice" id="firsFar"></svg>
+            <div class="fog f1"></div>
+          </div>
+          <div class="layer" data-depth="20">
+            <svg class="firs" viewBox="0 0 390 780" preserveAspectRatio="xMidYMid slice" id="firsMid"></svg>
+            <div class="fog f2"></div>
+          </div>
+          <div class="layer pathlayer" data-depth="26">
+            <svg class="firs" viewBox="0 0 390 780" preserveAspectRatio="none">
+              <path d="M70,760 C150,700 250,690 245,560 C242,470 250,420 250,360"
+                stroke="var(--path)" stroke-width="26" fill="none" stroke-linecap="round"/>
+              <path d="M250,360 C250,300 235,250 232,210" stroke="var(--path-dim)" stroke-width="15" fill="none" stroke-linecap="round" opacity=".45"/>
+            </svg>
+            <div class="fog f3"></div>
+          </div>
+          <div class="layer" data-depth="30">
+            <div class="opening"></div><div class="pulse"></div>
+            <div class="hint">In den Wald →</div>
+          </div>
+          <div class="layer l-near" data-depth="44">
+            <svg class="firs" viewBox="0 0 390 780" preserveAspectRatio="xMidYMid slice" id="firsNear"></svg>
+          </div>
+        </div>
+
+        <div class="enterzone" id="enterzone"></div>
+        <div class="ghosthint">Tritt ein …</div>
+
+        <div class="litfass" id="litfass">
+          <div class="finial"></div><div class="cap"></div>
+          <div class="shaft"></div>
+          <div class="poster">
+            <div class="badge">₿</div>
+            <div class="mast">BITCOIN<b>BOTE</b></div>
+            <hr>
+            <div class="date">Mi · 21. Juni</div>
+            <div class="head">Was ist ein Halving?</div>
+            <div class="more">→ lesen</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="scene lernpfad" id="lernpfad">
+        <div class="lp-sky"></div>
+        <button class="back" id="back" aria-label="Zurück">←</button>
+        <div class="summit"><div class="bld"><div class="disc">BB</div><div class="door"></div></div></div>
+        <div class="progress">2 / 4 Lektionen</div>
+        <div class="trail">
+          <svg class="lp-path" viewBox="0 0 390 520" preserveAspectRatio="none">
+            <path d="M195,470 C150,430 240,380 235,330 C230,275 150,250 160,190 C168,140 235,120 230,70"
+              stroke="#C7A06B" stroke-width="20" fill="none" stroke-linecap="round"/>
+          </svg>
+          <div class="stop locked" style="left:60%;top:13%"><div class="node locked"></div><div class="slabel">Sicher haben</div></div>
+          <div class="stop current" style="left:41%;top:37%"><div class="youhere">Du bist hier</div><div class="node current"><div class="ring"></div></div><div class="slabel">Bitcoin kaufen</div></div>
+          <div class="stop done"   style="left:60%;top:60%"><div class="node done"></div><div class="slabel">Warum Bitcoin?</div></div>
+          <div class="stop done"   style="left:41%;top:82%"><div class="node done"></div><div class="slabel">Was ist Geld?</div></div>
+        </div>
+      </div>
+
+      <div class="modal" id="modal">
+        <div class="paper">
+          <button class="x" id="closeModal" aria-label="Schließen">✕</button>
+          <h1>Bitcoin Bote</h1>
+          <div class="sub">Ausgabe 14 · Mittwoch, 21. Juni</div>
+          <h2>Was ist ein Halving?</h2>
+          <p class="lead">Alle vier Jahre halbiert sich, wie viele neue Bitcoin entstehen. Das ist kein Zufall, sondern in den Regeln festgeschrieben.</p>
+          <p>Stell dir eine Goldmine vor, in der ab einem festen Tag nur noch halb so viel Gold gefördert werden darf — für immer. Genau das passiert bei Bitcoin, ganz ohne Chef, der es anordnet.</p>
+          <p>Knappheit, die man nachrechnen kann: Das ist der Grund, warum manche Bitcoin „digitales Gold“ nennen. Mehr dazu auf deinem Weg den Hügel hinauf.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="dev">
+    <span>Pfad:</span>
+    <button id="bShow" class="active">sichtbar (Hybrid)</button>
+    <button id="bHide">versteckt (Mystik)</button>
+  </div>
+  <div class="note">Roher Prototyp zum Fühlen — Maus bewegen für Parallax · in den Wald tippen = Zoom · auf die Litfaßsäule tippen = Newsletter. Noch nicht „schön“, nur die Mechanik.</div>
+
+<script>
+  const $=s=>document.querySelector(s);
+  // build fir rows
+  function firs(svg,rows){
+    let s='';
+    rows.forEach(r=>{for(let i=0;i<r.n;i++){const x=r.x0+(r.x1-r.x0)*(i/(r.n-1||1))+(r.j?((i*53)%17-8):0);
+      const h=r.h*(0.85+((i*37)%30)/100);
+      s+=`<polygon points="${x},${r.y-h} ${x-h*0.42},${r.y} ${x+h*0.42},${r.y}" fill="${r.c}"/>`;}});
+    document.getElementById(svg).innerHTML=s;
+  }
+  firs('firsFar',[{n:9,x0:20,x1:370,y:200,h:40,c:'#3a4f44',j:1},{n:7,x0:40,x1:350,y:235,h:34,c:'#34473f',j:1}]);
+  firs('firsMid',[{n:8,x0:25,x1:365,y:300,h:62,c:'#22382e',j:1},{n:9,x0:10,x1:380,y:360,h:74,c:'#1b3024',j:1}]);
+  firs('firsNear',[{n:3,x0:-10,x1:70,y:700,h:150,c:'#0f1f18',j:1},{n:3,x0:320,x1:410,y:700,h:160,c:'#10211a',j:1}]);
+
+  // parallax
+  const layers=[...document.querySelectorAll('#world .layer')];
+  let tx=0,ty=0,cx=0,cy=0,t0=performance.now();
+  const screen=$('#screen');
+  screen.addEventListener('mousemove',e=>{const r=screen.getBoundingClientRect();
+    tx=((e.clientX-r.left)/r.width-.5)*-2;ty=((e.clientY-r.top)/r.height-.5)*-2;});
+  screen.addEventListener('mouseleave',()=>{tx=0;ty=0;});
+  function tick(now){const idle=(now-t0)/1000;
+    const ix=tx||Math.sin(idle*0.5)*0.5, iy=ty||Math.cos(idle*0.4)*0.35;
+    cx+=(ix-cx)*0.06; cy+=(iy-cy)*0.06;
+    layers.forEach(l=>{const d=+l.dataset.depth;l.style.transform=`translate3d(${cx*d}px,${cy*d}px,0)`;});
+    requestAnimationFrame(tick);}
+  requestAnimationFrame(tick);
+
+  // enter / back
+  const eingang=$('#eingang'),lernpfad=$('#lernpfad');
+  function enter(){eingang.classList.add('zoom');setTimeout(()=>lernpfad.classList.add('show'),140);}
+  function back(){lernpfad.classList.remove('show');setTimeout(()=>eingang.classList.remove('zoom'),120);}
+  $('#enterzone').addEventListener('click',enter);
+  $('#back').addEventListener('click',back);
+
+  // litfass / kiosk -> BOTE
+  const modal=$('#modal');
+  function openBote(e){e&&e.stopPropagation();modal.classList.add('show');}
+  $('#litfass').addEventListener('click',openBote);
+  $('#closeModal').addEventListener('click',()=>modal.classList.remove('show'));
+  modal.addEventListener('click',e=>{if(e.target===modal)modal.classList.remove('show');});
+
+  // path show/hide toggle
+  const bShow=$('#bShow'),bHide=$('#bHide');
+  bShow.addEventListener('click',()=>{eingang.classList.remove('hide');bShow.classList.add('active');bHide.classList.remove('active');});
+  bHide.addEventListener('click',()=>{eingang.classList.add('hide');bHide.classList.add('active');bShow.classList.remove('active');});
+
+  // lesson nodes (stub)
+  document.querySelectorAll('.stop').forEach(s=>s.addEventListener('click',()=>{
+    if(s.classList.contains('current'))openBote();
+  }));
+</script>
+</body>
+</html>
