@@ -220,3 +220,63 @@ if (newspaperSign) {
   });
 }
 
+// ── Bildung Eingang — the atmospheric forest entrance ↔ the Lernpfad (hill scene).
+// The room opens at the entrance; tapping the gate zooms through into the scene; the
+// Litfaßsäule opens the newspaper; a back control returns to the forest.
+const bildungRoom = document.querySelector('.room--bildung');
+const bildungEingang = document.querySelector('.bildung-eingang');
+const bildungGate = document.querySelector('#bildung-gate');
+const bildungLitfass = document.querySelector('.bildung-litfass');
+const bildungBack = document.querySelector('.bildung-back');
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+const setBildungView = (v) => { if (bildungRoom) bildungRoom.dataset.bildungView = v; };
+setBildungView('eingang');
+
+const onActivate = (el, fn) => {
+  if (!el) return;
+  el.addEventListener('click', fn);
+  el.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(); }
+  });
+};
+onActivate(bildungGate, () => setBildungView('pfad'));
+onActivate(bildungLitfass, openNewspaper);
+if (bildungBack) bildungBack.addEventListener('click', () => setBildungView('eingang'));
+
+// Reset to the entrance whenever the Bildung room (re)opens — the door is the front of the room.
+const bildungPhone = document.querySelector('.phone');
+if (bildungPhone) {
+  new MutationObserver(() => {
+    if (bildungPhone.dataset.room === 'bildung') setBildungView('eingang');
+  }).observe(bildungPhone, { attributes: true, attributeFilter: ['data-room'] });
+}
+
+// Light pointer parallax + idle sway on the entrance depth-layers (skipped under reduced motion).
+if (bildungEingang && !reduceMotion.matches) {
+  const beLayers = [...bildungEingang.querySelectorAll('[data-depth]')];
+  const K = 0.34;
+  let tx = 0, ty = 0, cx = 0, cy = 0;
+  const t0 = performance.now();
+  bildungEingang.addEventListener('pointermove', (e) => {
+    const r = bildungEingang.getBoundingClientRect();
+    tx = ((e.clientX - r.left) / r.width - 0.5) * -1.6;
+    ty = ((e.clientY - r.top) / r.height - 0.5) * -1.2;
+  });
+  bildungEingang.addEventListener('pointerleave', () => { tx = 0; ty = 0; });
+  const beTick = (now) => {
+    const idle = (now - t0) / 1000;
+    const ix = tx || Math.sin(idle * 0.45) * 0.5;
+    const iy = ty || Math.cos(idle * 0.40) * 0.3;
+    cx += (ix - cx) * 0.06; cy += (iy - cy) * 0.06;
+    if (bildungRoom && bildungRoom.dataset.bildungView === 'eingang') {
+      for (const l of beLayers) {
+        const d = +l.dataset.depth;
+        l.style.transform = `translate(${(cx * d * K).toFixed(2)}px, ${(cy * d * K).toFixed(2)}px)`;
+      }
+    }
+    requestAnimationFrame(beTick);
+  };
+  requestAnimationFrame(beTick);
+}
+
