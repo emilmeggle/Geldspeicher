@@ -1,156 +1,23 @@
-    /* Bildung room — suppress village silhouettes (they read "open valley", not "Black Forest") */
+    /* Bildung — one coherent night-Schwarzwald climb: a lantern-lit trail from the newsletter at the
+       trailhead up past the four lessons to the Geldspeicher glowing at the misty summit. */
     [data-room="bildung"] .village-left,
-    [data-room="bildung"] .village-right {
-      display: none;
-    }
-    /* Cooler, deeper sky makes the red dome + orange disc pop harder */
-    [data-room="bildung"] .phone-sky {
-      background-color: #6A8FA8;
-    }
+    [data-room="bildung"] .village-right { display: none; }
 
-    /* Bildung path — single-screen scene, everything visible at once */
-    .room--bildung {
-      padding: 0;
-      align-items: stretch;
-      overflow: hidden;
-    }
-    .bildung-scene {
-      width: 100%;
-      height: auto;
-      display: block;
-      flex-shrink: 0;
-    }
-    .bildung-sign {
-      cursor: pointer;
-    }
-    .bildung-sign-body {
-      transition: translate 80ms ease;
-      translate: 0 0;
-    }
-    .bildung-sign-shadow {
-      transition: opacity 80ms ease;
-    }
-    .bildung-sign:active .bildung-sign-body {
-      translate: 0 4px;
-    }
-    .bildung-sign:active .bildung-sign-shadow {
-      opacity: 0.25;
-    }
-    /* Suppress all focus/active outlines on interactive scene elements
-       (signs, gate, newspaper). Click-tap visual feedback is the :active translate. */
-    .bildung-sign,
-    .bildung-sign:focus,
-    .bildung-sign:focus-visible,
-    .bildung-sign:focus-within {
-      outline: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-    /* Hill — green dome the Geldspeicher sits on; soft diagonal gradient does the 3D feel */
-    .bildung-hill {
-      stroke: var(--outline);
-      stroke-width: 2.5;
-      stroke-linejoin: round;
-      stroke-linecap: round;
-    }
-    .bildung-hill-contour { fill: none; stroke: #3F5D49; stroke-width: 1; opacity: 0.35; stroke-linecap: round; }
-    .bildung-hill-base { fill: none; stroke: #2A4232; stroke-width: 5; stroke-linecap: round; opacity: 0.55; }
-    .bildung-road {
-      fill: #C09A6A;
-      stroke: var(--outline);
-      stroke-width: 3;
-      stroke-linejoin: round;
-    }
-    .bildung-road-shade {
-      fill: none;
-      stroke: #9C7A48;
-      stroke-width: 2.5;
-      opacity: 0.55;
-      stroke-linecap: round;
-    }
+    .room--bildung { padding: 0; align-items: stretch; overflow: hidden; }
+    .bildung-scene { width: 100%; height: auto; display: block; flex-shrink: 0; }
+    .bildung-scene text { font-family: var(--sans, system-ui, sans-serif); }
 
-    /* Newspaper sign — first sign Peter sees on the way up; same vocab as lesson signs */
-    .bildung-newspaper { cursor: pointer; }
-    .bildung-newspaper-body { transition: translate 80ms ease; }
-    .bildung-newspaper-shadow {
-      transition: opacity 80ms ease;
-      opacity: 0.42;
-    }
+    /* Lesson signs + the BITCOIN BOTE newsletter — tap feedback is the :active sink; focus rings off */
+    .bildung-sign, .bildung-newspaper { cursor: pointer; }
+    .bildung-sign-body, .bildung-newspaper-body { transition: translate 80ms ease; translate: 0 0; }
+    .bildung-sign-shadow, .bildung-newspaper-shadow { transition: opacity 80ms ease; }
+    .bildung-newspaper-shadow { opacity: 0.42; }
+    .bildung-sign:active .bildung-sign-body { translate: 0 4px; }
+    .bildung-sign:active .bildung-sign-shadow { opacity: 0.25; }
     .bildung-newspaper:active .bildung-newspaper-body { translate: 0 3px; }
-    .bildung-newspaper:active .bildung-newspaper-shadow { opacity: 0.18; }
-    .bildung-newspaper,
-    .bildung-newspaper:focus,
-    .bildung-newspaper:focus-visible,
-    .bildung-newspaper:focus-within,
-    #bildung-gate,
-    #bildung-gate:focus,
-    #bildung-gate:focus-visible,
-    #bildung-gate:focus-within {
+    .bildung-newspaper:active .bildung-newspaper-shadow { opacity: 0.2; }
+    .bildung-sign, .bildung-sign:focus, .bildung-sign:focus-visible, .bildung-sign:focus-within,
+    .bildung-newspaper, .bildung-newspaper:focus, .bildung-newspaper:focus-visible, .bildung-newspaper:focus-within {
       outline: none;
       -webkit-tap-highlight-color: transparent;
-    }
-
-    /* Wasserrad — the room's quiet motion: an overshot Muehlrad turning at the forest foot.
-       Rotating group is symmetric about its local origin, so fill-box pivots on the hub. */
-    .bildung-wasserrad-wheel {
-      transform-box: fill-box;
-      transform-origin: center;
-      animation: bildung-wasserrad-spin 12s linear infinite;
-    }
-    @keyframes bildung-wasserrad-spin { to { transform: rotate(360deg); } }
-    @media (prefers-reduced-motion: reduce) {
-      .bildung-wasserrad-wheel { animation-play-state: paused; }
-    }
-
-    /* ── Bildung Eingang — forest entrance ↔ Lernpfad (the hill scene) ───────────
-       Two layers scale independently toward the gate point; the room itself is
-       never transformed (it's a flex child of the pure-CSS room slider). */
-    .room--bildung { position: relative; }
-    .bildung-eingang {
-      position: absolute; top: 0; left: 0; width: 100%; height: auto; display: block;
-      transform-origin: 50% 54%;
-      transition: transform 0.95s cubic-bezier(.6,.02,.2,1), opacity 0.7s ease 0.18s;
-      will-change: transform, opacity;
-    }
-    .bildung-eingang text { font-family: var(--sans, system-ui, sans-serif); }
-    .bildung-scene {
-      transform-origin: 50% 54%;
-      transition: transform 1s cubic-bezier(.2,.7,.2,1) 0.1s, opacity 0.7s ease;
-    }
-    /* Default = the entrance is shown; the scene sits zoomed-in behind the opaque overlay. */
-    .room--bildung[data-bildung-view="eingang"] .bildung-scene  { transform: scale(1.12); }
-    .room--bildung[data-bildung-view="eingang"] .bildung-eingang { opacity: 1; transform: scale(1); pointer-events: auto; }
-    /* Entered = the overlay zooms through the gate and fades; the scene settles to 1. */
-    .room--bildung[data-bildung-view="pfad"] .bildung-eingang { opacity: 0; transform: scale(2.7); pointer-events: none; }
-    .room--bildung[data-bildung-view="pfad"] .bildung-scene    { transform: scale(1); }
-
-    .bildung-litfass, #bildung-gate { cursor: pointer; }
-    #bildung-gate { transition: translate 80ms ease; }
-    #bildung-gate:active { translate: 0 2px; }
-    .bildung-litfass { transition: translate 80ms ease; }
-    .bildung-litfass:active { translate: 0 2px; }
-    .bildung-eingang [data-depth] { will-change: transform; }
-
-    .be-glow { animation: be-glow 3.6s ease-in-out infinite; }
-    .be-step { animation: be-glow 3.6s ease-in-out infinite; }
-    @keyframes be-glow { 0%, 100% { opacity: 0.82; } 50% { opacity: 1; } }
-
-    /* The Litfaßsäule is now the newsletter — the in-scene BITCOIN BOTE notice is redundant. */
-    .bildung-newspaper { display: none; }
-
-    /* Back-to-forest control — only in the entered (pfad) view. */
-    .bildung-back {
-      position: absolute; top: 12px; left: 12px; z-index: 6;
-      font: 600 13px/1 var(--sans, system-ui, sans-serif); color: var(--num, #F5EDD8);
-      background: rgba(20,26,32,0.6); border: 1.5px solid rgba(245,237,216,0.25);
-      border-radius: 999px; padding: 8px 14px 9px; cursor: pointer;
-      opacity: 0; pointer-events: none; transition: opacity 0.3s ease 0.2s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .bildung-back:focus, .bildung-back:focus-visible { outline: none; }
-    .room--bildung[data-bildung-view="pfad"] .bildung-back { opacity: 1; pointer-events: auto; }
-
-    @media (prefers-reduced-motion: reduce) {
-      .bildung-eingang, .bildung-scene { transition: opacity 0.3s ease; transform: none !important; }
-      .be-glow, .be-step { animation: none; opacity: 1; }
-      .bildung-eingang [data-depth] { transform: none !important; }
     }
