@@ -130,8 +130,8 @@
     .bildung-litfass:active { translate: 0 2px; }
     .bildung-eingang [data-depth] { will-change: transform; }
 
-    .be-pulse { transform-box: fill-box; transform-origin: center; animation: be-pulse 1.9s ease-out infinite; }
-    @keyframes be-pulse { 0% { transform: scale(0.75); opacity: 0.8; } 100% { transform: scale(2.4); opacity: 0; } }
+    .be-glow { animation: be-glow 3.6s ease-in-out infinite; }
+    @keyframes be-glow { 0%, 100% { opacity: 0.82; } 50% { opacity: 1; } }
 
     /* The Litfaßsäule is now the newsletter — the in-scene BITCOIN BOTE notice is redundant. */
     .bildung-newspaper { display: none; }
@@ -150,6 +150,6 @@
 
     @media (prefers-reduced-motion: reduce) {
       .bildung-eingang, .bildung-scene { transition: opacity 0.3s ease; transform: none !important; }
-      .be-pulse { animation: none; opacity: 0.6; }
+      .be-glow { animation: none; opacity: 1; }
       .bildung-eingang [data-depth] { transform: none !important; }
     }
