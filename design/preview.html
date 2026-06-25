@@ -687,7 +687,7 @@
             <svg class="bildung-eingang" viewBox="0 0 393 780" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
               <defs>
                 <symbol id="beFir" viewBox="0 0 40 80">
-                  <path d="M20 3 L33 30 L26 30 L37 53 L29 53 L40 77 L0 77 L11 53 L3 53 L14 30 L7 30 Z" fill="currentColor"/>
+                  <path d="M20 3 L33 30 L26 30 L37 53 L29 53 L40 77 L0 77 L11 53 L3 53 L14 30 L7 30 Z" fill="currentColor" stroke="#1A2028" stroke-width="1.5" stroke-linejoin="round"/>
                 </symbol>
                 <linearGradient id="beSky" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0" stop-color="#33444A"/><stop offset="0.5" stop-color="#24372F"/><stop offset="1" stop-color="#18271F"/>
@@ -699,46 +699,55 @@
                 <rect x="0" y="150" width="393" height="630" fill="#18271F"/>
               </g>
 
-              <!-- distant Geldspeicher — the goal, far up the valley: recognisable but hazed, no glow -->
+              <!-- distant Geldspeicher — the treasure at the summit: grounded on a hazy hill-crest,
+                   rim-lit against a warm dawn sky, pushed back with cool atmosphere (no glow halo) -->
               <g class="be-l" data-depth="4" pointer-events="none">
-                <rect x="172" y="172" width="48" height="40" fill="#3B4A45" stroke="#2C3A35" stroke-width="1.2"/>
-                <rect x="167" y="166" width="58" height="7" fill="#34423E"/>
-                <path d="M172 172 A24 14 0 0 1 220 172 Z" fill="#6E4038" stroke="#2C3A35" stroke-width="1.2"/>
-                <circle cx="196" cy="192" r="11" fill="#9A6A28" stroke="#2C3A35" stroke-width="1.2"/>
-                <rect x="162" y="150" width="68" height="68" fill="#24372F" opacity="0.40"/>
+                <ellipse cx="196" cy="176" rx="132" ry="32" fill="#6A5E44" opacity="0.22"/>
+                <path d="M24,232 Q196,166 368,232 L368,252 L24,252 Z" fill="#2B3D33"/>
+                <use href="#beFir" x="112" y="150" width="28" height="44" style="color:#33463E"/>
+                <use href="#beFir" x="250" y="150" width="28" height="44" style="color:#33463E"/>
+                <rect x="166" y="150" width="60" height="44" fill="#3C4B46" stroke="#2A3833" stroke-width="0.8"/>
+                <rect x="161" y="143" width="70" height="8" fill="#35433F"/>
+                <path d="M166 150 A30 16 0 0 1 226 150 Z" fill="#6E4440" stroke="#2A3833" stroke-width="0.8"/>
+                <circle cx="196" cy="173" r="13" fill="#9A6A28" stroke="#2A3833" stroke-width="0.8"/>
+                <text x="196" y="178" text-anchor="middle" font-size="11" font-weight="700" fill="#2A3833">BB</text>
+                <rect x="150" y="134" width="92" height="84" fill="#4C5C64" opacity="0.16"/>
               </g>
 
-              <!-- far treeline -->
+              <!-- far treeline — staggered baselines + varied sizes so no horizontal line forms -->
               <g class="be-l" data-depth="8" pointer-events="none">
-                <use href="#beFir" x="-8" y="212" width="42" height="50" style="color:#37524A"/>
-                <use href="#beFir" x="30" y="208" width="44" height="54" style="color:#335049"/>
-                <use href="#beFir" x="68" y="214" width="40" height="48" style="color:#3A554C"/>
-                <use href="#beFir" x="104" y="210" width="42" height="52" style="color:#335049"/>
-                <use href="#beFir" x="140" y="212" width="42" height="50" style="color:#37524A"/>
-                <use href="#beFir" x="212" y="214" width="40" height="48" style="color:#335049"/>
-                <use href="#beFir" x="248" y="210" width="42" height="52" style="color:#37524A"/>
-                <use href="#beFir" x="284" y="212" width="42" height="50" style="color:#3A554C"/>
-                <use href="#beFir" x="320" y="208" width="44" height="54" style="color:#335049"/>
-                <use href="#beFir" x="356" y="214" width="40" height="48" style="color:#37524A"/>
+                <use href="#beFir" x="-10" y="206" width="46" height="58" style="color:#37524A"/>
+                <use href="#beFir" x="22" y="216" width="38" height="48" style="color:#2F4A43"/>
+                <use href="#beFir" x="50" y="202" width="50" height="64" style="color:#3A554C"/>
+                <use href="#beFir" x="92" y="218" width="36" height="46" style="color:#335049"/>
+                <use href="#beFir" x="120" y="208" width="46" height="58" style="color:#2F4A43"/>
+                <use href="#beFir" x="160" y="214" width="40" height="52" style="color:#37524A"/>
+                <use href="#beFir" x="196" y="210" width="44" height="56" style="color:#335049"/>
+                <use href="#beFir" x="234" y="218" width="38" height="48" style="color:#2F4A43"/>
+                <use href="#beFir" x="262" y="204" width="50" height="62" style="color:#3A554C"/>
+                <use href="#beFir" x="302" y="216" width="38" height="48" style="color:#335049"/>
+                <use href="#beFir" x="330" y="206" width="48" height="60" style="color:#37524A"/>
+                <use href="#beFir" x="362" y="214" width="40" height="52" style="color:#2F4A43"/>
               </g>
 
-              <!-- dense back + mid firs, varied sizes, tight group -->
+              <!-- mid forest — one overlapping thicket: staggered baselines, big size spread, crowns
+                   eclipsing the firs behind; no horizontal haze seam -->
               <g class="be-l" data-depth="13" pointer-events="none">
-                <use href="#beFir" x="-12" y="260" width="46" height="70" style="color:#2F5240"/>
-                <use href="#beFir" x="28" y="258" width="44" height="76" style="color:#243D2C"/>
-                <use href="#beFir" x="66" y="262" width="42" height="66" style="color:#305C3C"/>
-                <use href="#beFir" x="104" y="256" width="48" height="82" style="color:#1C3528"/>
-                <use href="#beFir" x="146" y="260" width="44" height="72" style="color:#2F5240"/>
-                <use href="#beFir" x="188" y="258" width="50" height="86" style="color:#243D2C"/>
-                <use href="#beFir" x="232" y="260" width="46" height="74" style="color:#305C3C"/>
-                <use href="#beFir" x="272" y="258" width="46" height="80" style="color:#1C3528"/>
-                <use href="#beFir" x="312" y="260" width="44" height="70" style="color:#2F5240"/>
-                <use href="#beFir" x="350" y="258" width="46" height="76" style="color:#243D2C"/>
-                <rect x="-12" y="276" width="417" height="40" fill="#C7D4CC" opacity="0.12"/>
-                <use href="#beFir" x="6" y="312" width="52" height="92" style="color:#1C3528"/>
-                <use href="#beFir" x="56" y="314" width="54" height="96" style="color:#16271D"/>
-                <use href="#beFir" x="300" y="314" width="54" height="94" style="color:#1C3528"/>
-                <use href="#beFir" x="342" y="312" width="52" height="90" style="color:#16271D"/>
+                <use href="#beFir" x="-16" y="246" width="52" height="88" style="color:#2F5240"/>
+                <use href="#beFir" x="22" y="268" width="40" height="64" style="color:#28412F"/>
+                <use href="#beFir" x="50" y="250" width="58" height="98" style="color:#243D2C"/>
+                <use href="#beFir" x="96" y="272" width="42" height="68" style="color:#305C3C"/>
+                <use href="#beFir" x="128" y="252" width="56" height="92" style="color:#1C3528"/>
+                <use href="#beFir" x="172" y="266" width="46" height="78" style="color:#2F5240"/>
+                <use href="#beFir" x="206" y="250" width="56" height="96" style="color:#243D2C"/>
+                <use href="#beFir" x="250" y="270" width="44" height="70" style="color:#305C3C"/>
+                <use href="#beFir" x="282" y="252" width="58" height="94" style="color:#1C3528"/>
+                <use href="#beFir" x="328" y="268" width="44" height="74" style="color:#2F5240"/>
+                <use href="#beFir" x="360" y="256" width="50" height="86" style="color:#243D2C"/>
+                <use href="#beFir" x="2" y="308" width="56" height="100" style="color:#1C3528"/>
+                <use href="#beFir" x="52" y="318" width="58" height="104" style="color:#16271D"/>
+                <use href="#beFir" x="296" y="316" width="58" height="102" style="color:#1C3528"/>
+                <use href="#beFir" x="340" y="310" width="56" height="98" style="color:#16271D"/>
               </g>
 
               <!-- street / path-side ground (the Litfaßsäule + path foot stand here) -->
@@ -751,7 +760,7 @@
               <!-- organic earthen path — winds up, ruts + stones, climbs and vanishes into the forest shadow -->
               <g class="be-l" data-depth="20">
                 <path d="M214,784 C232,712 192,650 210,576 C222,524 184,500 190,454 L206,454 C226,500 262,524 250,576 C232,650 272,712 256,784 Z"
-                      fill="#B68A55" stroke="#6E5236" stroke-width="1.5" pointer-events="none"/>
+                      fill="#B68A55" stroke="#2A2018" stroke-width="3" pointer-events="none"/>
                 <path d="M226,782 C238,712 202,652 216,578 C226,528 197,504 199,458" fill="none" stroke="#8A6A40" stroke-width="2.5" opacity="0.55" pointer-events="none"/>
                 <path d="M244,782 C252,716 222,652 232,578 C240,528 207,504 207,460" fill="none" stroke="#9C7A4E" stroke-width="2" opacity="0.40" pointer-events="none"/>
                 <ellipse cx="206" cy="760" rx="7" ry="4.5" fill="#7C766A" stroke="#4A463E" stroke-width="0.8" pointer-events="none"/>
@@ -765,32 +774,40 @@
                 <circle cx="206" cy="650" r="1.4" fill="#5E5A50" pointer-events="none"/>
               </g>
 
-              <!-- front firs framing the dark gap (left + right + the wall the path enters) -->
+              <!-- near firs — big, dark, overlapping; they crowd the mouth where the path vanishes -->
               <g class="be-l" data-depth="24" pointer-events="none">
-                <use href="#beFir" x="-18" y="388" width="70" height="128" style="color:#13231A"/>
-                <use href="#beFir" x="42" y="388" width="60" height="112" style="color:#16271D"/>
-                <use href="#beFir" x="92" y="388" width="56" height="108" style="color:#13231A"/>
-                <use href="#beFir" x="248" y="388" width="58" height="110" style="color:#16271D"/>
-                <use href="#beFir" x="298" y="390" width="66" height="122" style="color:#13231A"/>
-                <use href="#beFir" x="346" y="386" width="64" height="114" style="color:#16271D"/>
-                <use href="#beFir" x="146" y="344" width="52" height="96" style="color:#16271D"/>
-                <use href="#beFir" x="188" y="342" width="50" height="92" style="color:#13231A"/>
-                <use href="#beFir" x="222" y="346" width="52" height="98" style="color:#16271D"/>
+                <use href="#beFir" x="146" y="342" width="50" height="94" style="color:#16271D"/>
+                <use href="#beFir" x="190" y="338" width="48" height="92" style="color:#13231A"/>
+                <use href="#beFir" x="224" y="344" width="52" height="96" style="color:#16271D"/>
+                <use href="#beFir" x="-26" y="358" width="82" height="150" style="color:#13231A"/>
+                <use href="#beFir" x="38" y="386" width="62" height="118" style="color:#16271D"/>
+                <use href="#beFir" x="88" y="372" width="68" height="130" style="color:#101F16"/>
+                <use href="#beFir" x="244" y="372" width="66" height="128" style="color:#101F16"/>
+                <use href="#beFir" x="296" y="366" width="72" height="136" style="color:#13231A"/>
+                <use href="#beFir" x="344" y="382" width="66" height="120" style="color:#16271D"/>
+                <use href="#beFir" x="126" y="372" width="62" height="120" style="color:#101F16"/>
+                <use href="#beFir" x="230" y="374" width="60" height="118" style="color:#101F16"/>
               </g>
 
-              <!-- the shadow the path vanishes into -->
+              <!-- the shadow the path vanishes into — lit warmly from within so the gap glows like a
+                   lantern-lit threshold (the forest looks inviting, not a flat black hole) -->
               <g class="be-l" data-depth="24" pointer-events="none">
                 <ellipse cx="198" cy="450" rx="46" ry="40" fill="#0B1510" opacity="0.55"/>
                 <ellipse cx="198" cy="444" rx="30" ry="26" fill="#0B1510" opacity="0.85"/>
+                <ellipse cx="198" cy="452" rx="40" ry="32" fill="#F7931A" opacity="0.08"/>
+                <ellipse cx="198" cy="452" rx="22" ry="18" fill="#F7931A" opacity="0.10"/>
               </g>
 
-              <!-- entrance marker — where the path disappears into shadow -->
+              <!-- entrance marker — footsteps into the warm-lit gap (means 'walk in', not 'scroll up') -->
               <g class="be-l" data-depth="26">
                 <g id="bildung-gate" role="button" tabindex="0" aria-label="In den Wald — Lernpfad betreten">
                   <circle cx="198" cy="452" r="30" fill="#000" opacity="0" pointer-events="all"/>
                   <circle class="be-pulse" cx="198" cy="452" r="15" fill="none" stroke="#F7931A" stroke-width="2.5" pointer-events="none"/>
                   <circle cx="198" cy="452" r="13" fill="#1A2028" stroke="#F7931A" stroke-width="2.5"/>
-                  <path d="M192,456 L198,448 L204,456" fill="none" stroke="#F7931A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <g fill="#F7931A">
+                    <ellipse cx="194" cy="456" rx="2.4" ry="3.7" transform="rotate(-18 194 456)"/>
+                    <ellipse cx="201" cy="449" rx="2.4" ry="3.7" transform="rotate(-18 201 449)"/>
+                  </g>
                 </g>
               </g>
 
@@ -818,7 +835,7 @@
                 <rect x="98" y="476" width="4" height="12" fill="#5C7A5E"/>
                 <circle cx="100" cy="474" r="4.5" fill="#5C7A5E" stroke="#1A2028" stroke-width="1"/>
                 <rect x="66" y="510" width="68" height="176" fill="#ECE3CC" stroke="#B7A985" stroke-width="1"/>
-                <circle cx="100" cy="534" r="13" fill="#F7931A" stroke="#1A2028" stroke-width="1.5"/>
+                <circle cx="100" cy="534" r="13" fill="#F5EDD8" stroke="#1A2028" stroke-width="1.5"/>
                 <text x="100" y="539" text-anchor="middle" font-size="13" font-weight="700" fill="#1A2028">₿</text>
                 <text x="100" y="555" text-anchor="middle" font-size="11" font-weight="700" fill="#2E2418">BITCOIN</text>
                 <text x="100" y="571" text-anchor="middle" font-size="13" font-weight="700" fill="#2E2418">BOTE</text>
@@ -826,7 +843,7 @@
                 <text x="100" y="593" text-anchor="middle" font-size="11" fill="#7A6A52">heute</text>
                 <text x="100" y="611" text-anchor="middle" font-size="11" fill="#2E2418">Was ist ein</text>
                 <text x="100" y="626" text-anchor="middle" font-size="12" font-weight="700" fill="#2E2418">Halving?</text>
-                <text x="100" y="648" text-anchor="middle" font-size="11" fill="#B5651D">→ lesen</text>
+                <text x="100" y="648" text-anchor="middle" font-size="11" fill="#7A6A52">→ lesen</text>
               </g>
             </svg>
 

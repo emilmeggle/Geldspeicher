@@ -108,7 +108,7 @@
     .bildung-eingang {
       position: absolute; top: 0; left: 0; width: 100%; height: auto; display: block;
       transform-origin: 50% 54%;
-      transition: transform 0.95s cubic-bezier(.6,.02,.2,1), opacity 0.8s ease;
+      transition: transform 0.95s cubic-bezier(.6,.02,.2,1), opacity 0.7s ease 0.18s;
       will-change: transform, opacity;
     }
     .bildung-eingang text { font-family: var(--sans, system-ui, sans-serif); }
