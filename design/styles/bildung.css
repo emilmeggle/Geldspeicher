@@ -131,6 +131,7 @@
     .bildung-eingang [data-depth] { will-change: transform; }
 
     .be-glow { animation: be-glow 3.6s ease-in-out infinite; }
+    .be-step { animation: be-glow 3.6s ease-in-out infinite; }
     @keyframes be-glow { 0%, 100% { opacity: 0.82; } 50% { opacity: 1; } }
 
     /* The Litfaßsäule is now the newsletter — the in-scene BITCOIN BOTE notice is redundant. */
@@ -150,6 +151,6 @@
 
     @media (prefers-reduced-motion: reduce) {
       .bildung-eingang, .bildung-scene { transition: opacity 0.3s ease; transform: none !important; }
-      .be-glow { animation: none; opacity: 1; }
+      .be-glow, .be-step { animation: none; opacity: 1; }
       .bildung-eingang [data-depth] { transform: none !important; }
     }
