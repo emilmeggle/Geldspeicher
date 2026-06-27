@@ -18,6 +18,21 @@
   padding-bottom: 32px;
 }
 
+/* Lightning-coin emblem — the room's tactile face. The olive Bargeld screen was
+   the app's only room with no hand-drawn object; this anchors it and says "your
+   spendable Lightning Bitcoin lives here", filling the dead space above the
+   balance. Gold coin atom (NOT the reserved action-orange) + a dark lightning
+   stamp so it never competes with the orange Senden button. Static — its
+   tactility is the hard offset shadow + halftone + thick ink outline, not motion
+   (an idle keyframe would run off-room and risk the 460ms room crossfade). */
+.bargeld-emblem {
+  width: 104px;
+  height: 104px;
+  display: block;
+  margin-bottom: 22px;
+  flex-shrink: 0;
+}
+
 /* EUR — primary big number */
 .bargeld-eur {
   font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
@@ -29,18 +44,23 @@
   text-shadow: 0 4px 0 rgba(26,32,40,0.35);
 }
 
-/* Sats — secondary small label */
+/* Sats — secondary small label.
+   Olive (#9A8235) is mid-toned: the light --label was only 1.5:1 here (worst
+   contrast in the app). A dark muted ink (#141A21) clears 4.6:1 → AA at any size,
+   and echoes the dark-on-warm of the Senden button so it stays in-language. */
 .bargeld-number {
   font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
   font-size: 18px;
   font-weight: 900;
-  color: var(--label);
+  color: #141A21;
   font-variant-numeric: tabular-nums;
   margin-top: 6px;
   line-height: 1;
 }
 
-/* Aufladen text link */
+/* Aufladen — how an empty wallet gets funded, so it must be legible, not faint.
+   Was cream @ 0.55 opacity (~2:1 on olive); now the same dark muted ink, full
+   strength, kept secondary by size + the underline-on-press affordance. */
 .bargeld-aufladen-link {
   margin-top: 18px;
   background: none;
@@ -48,13 +68,21 @@
   font-family: 'Comic Sans MS', 'Marker Felt', system-ui, sans-serif;
   font-size: 15px;
   font-weight: 900;
-  color: var(--num);
-  opacity: 0.55;
+  color: #141A21;
   cursor: pointer;
   letter-spacing: 0.3px;
-  transition: opacity 0.12s;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(20,26,33,0.45);
+  transition: text-decoration-color 0.12s;
 }
-.bargeld-aufladen-link:active { opacity: 1; }
+.bargeld-aufladen-link:active { text-decoration-color: rgba(20,26,33,0.9); }
+.bargeld-aufladen-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
 
 /* Two-button action row */
 .bargeld-actions {

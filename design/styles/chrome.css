@@ -39,6 +39,7 @@
       align-items: center;
       justify-content: center;
       padding: 8px 0;
+      min-height: 44px; /* Apple HIG comfortable tap target (was ~40px) */
       color: var(--label);
       cursor: pointer;
       transition: color 220ms ease;

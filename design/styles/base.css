@@ -4,7 +4,12 @@
       --bildung-green: #4A6B52;
       --bargeld-yellow: #9A8235;
       --halftone: rgba(245,235,210,0.08);
-      --label: #98A6B5;
+      /* Muted label — raised from #98A6B5 (3.2:1 on stone, failed AA) to clear
+         4.5:1 for small text while staying a cool grey clearly dimmer/cooler than
+         the warm cream --num, so the number-vs-label hierarchy is preserved.
+         Olive (Bargeld) is too mid-toned for any light label — that room uses a
+         dark muted ink instead (see bargeld.css). */
+      --label: #C2CCD8;
       --num: #F5EDD8;
       --pill: #6E8194;
       --accent: #F7931A;

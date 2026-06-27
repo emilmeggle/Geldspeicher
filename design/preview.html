@@ -674,6 +674,40 @@
             <div class="bargeld-screen">
 
               <div class="bargeld-balance-wrap">
+                <!-- Lightning-coin emblem: the room's tactile face. Gold coin atom
+                     (NOT the reserved action-orange) + a dark lightning stamp =
+                     "spendable Lightning Bitcoin", distinct from the Bank vault's
+                     ₿ coins. Thick ink outline + halftone + hard offset shadow. -->
+                <svg class="bargeld-emblem" viewBox="0 0 104 104" role="img"
+                     aria-label="Lightning-Bitcoin — dein Bargeld" focusable="false">
+                  <defs>
+                    <clipPath id="bgEmblemFace"><circle cx="52" cy="50" r="30"/></clipPath>
+                  </defs>
+                  <!-- ground contact shadow -->
+                  <ellipse cx="52" cy="98" rx="29" ry="4.5" fill="#1A2028" opacity="0.22"/>
+                  <!-- hard offset coin shadow -->
+                  <circle cx="56" cy="55" r="40" fill="#1A2028"/>
+                  <!-- rim -->
+                  <circle cx="52" cy="50" r="40" fill="#A86512" stroke="#1A2028" stroke-width="4"/>
+                  <!-- face -->
+                  <circle cx="52" cy="50" r="30" fill="#F8C247" stroke="#1A2028" stroke-width="3"/>
+                  <g clip-path="url(#bgEmblemFace)">
+                    <!-- volume: darkened lower-right + top-left highlight -->
+                    <circle cx="66" cy="68" r="34" fill="#5C3D24" opacity="0.17"/>
+                    <circle cx="38" cy="36" r="18" fill="#FFE6A0" opacity="0.5"/>
+                    <!-- halftone hatch (lower-right) -->
+                    <g stroke="#A86512" stroke-width="2" opacity="0.55" stroke-linecap="round">
+                      <line x1="44" y1="82" x2="84" y2="42"/>
+                      <line x1="52" y1="84" x2="86" y2="50"/>
+                      <line x1="60" y1="84" x2="86" y2="58"/>
+                      <line x1="68" y1="84" x2="86" y2="66"/>
+                    </g>
+                  </g>
+                  <!-- lightning bolt stamp -->
+                  <path d="M56 27 L41 53 L49 53 L43 75 L61 46 L53 46 Z"
+                        fill="#1A2028" stroke="#1A2028" stroke-width="1.4"
+                        stroke-linejoin="round"/>
+                </svg>
                 <div class="bargeld-eur" id="bargeldEur">0,00 €</div>
                 <div class="bargeld-number" id="bargeldNumber">0 Sats</div>
                 <button class="bargeld-aufladen-link" type="button" id="bargeldAufladenBtn">+ Aufladen</button>

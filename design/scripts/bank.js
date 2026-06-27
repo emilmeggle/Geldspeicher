@@ -102,6 +102,9 @@ const updateStackValue = () => {
   lastSignPrice = currentPrice;
   stackMainEl.textContent = formatMain(sats);
   stackEurEl.textContent  = formatEurValue(sats);
+  // Content flip (empty↔stack) always moves the displayed value, so this is the
+  // chokepoint to re-sync which CTA is the focusable primary (see setOpenActions).
+  setOpenActions();
 };
 
 const setPrice = (n) => {
@@ -202,11 +205,18 @@ const fadeOut = () => {
 
 const swap = async (newPrice) => { await fadeOut(); setPrice(newPrice); if (!isVaultOpen()) await swingIn(); };
 
-const setOpenActions = (open) => {
-  buyButton.setAttribute('aria-hidden', open ? 'true' : 'false');
-  buyButton.tabIndex = open ? -1 : 0;
-  vaultActions.setAttribute('aria-hidden', open ? 'false' : 'true');
-  vaultActionButtons.forEach((b) => { b.tabIndex = open ? 0 : -1; });
+// Sync the action row's focus/AT visibility to the current vault state, mirroring
+// the CSS swap in bank.css. The buy CTA is the single primary action whenever the
+// vault is closed OR open-but-empty (Senden/Verkaufen do nothing with no balance);
+// otherwise Senden/Verkaufen take over. Reads state itself so it stays correct
+// when the content flips empty↔stack while the vault is open (e.g. a buy from an
+// open empty vault, or selling everything).
+const setOpenActions = () => {
+  const showBuy = !isVaultOpen() || phone.dataset.vaultContent === 'empty';
+  buyButton.setAttribute('aria-hidden', showBuy ? 'false' : 'true');
+  buyButton.tabIndex = showBuy ? 0 : -1;
+  vaultActions.setAttribute('aria-hidden', showBuy ? 'true' : 'false');
+  vaultActionButtons.forEach((b) => { b.tabIndex = showBuy ? -1 : 0; });
 };
 
 export const openVault = () => {
@@ -214,7 +224,7 @@ export const openVault = () => {
   vaultButton.setAttribute('aria-pressed', 'true');
   vaultButton.setAttribute('aria-label', 'Geldspeicher schließen');
   sign.removeAttribute('aria-hidden');
-  setOpenActions(true);
+  setOpenActions();
   updateStackValue();
   if (activeAnim) activeAnim.cancelled = true;
   clearStyles();
@@ -225,7 +235,7 @@ export const closeVault = () => {
   phone.dataset.mode = 'closed';
   vaultButton.setAttribute('aria-pressed', 'false');
   vaultButton.setAttribute('aria-label', 'Geldspeicher öffnen');
-  setOpenActions(false);
+  setOpenActions();
   if (currentPrice != null) {
     sign.removeAttribute('aria-hidden');
     if (activeAnim) activeAnim.cancelled = true;
@@ -1060,6 +1070,10 @@ export const setVaultContent = (content) => {
     setCoinTarget(0);
     clearWealth();
   }
+  // Resync the action row directly: updateStackValue's memo can early-return when
+  // the displayed sats are unchanged (e.g. content→'stack' while demoSats===0),
+  // which would otherwise skip the setOpenActions() it normally triggers.
+  setOpenActions();
   updateStackValue();
 };
 
@@ -1268,7 +1282,7 @@ window.addEventListener('orientationchange', fitVaultScale);
 const cached = loadCachedPrice();
 if (cached != null) { currentPrice = cached; setPrice(cached); swingIn(); }
 else { updateStackValue(); }
-setOpenActions(false);
+setOpenActions();
 setPreviewCoins(talerCount());
 tick();
 setInterval(tick, PRICE_REFRESH_MS);

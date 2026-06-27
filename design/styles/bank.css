@@ -304,6 +304,26 @@
       transition-delay: 300ms, 300ms, 300ms;
     }
 
+    /* Empty vault: Senden/Verkaufen are no-ops (nothing to send or sell), so the
+       buy CTA stays the single primary action even with the vault open. Higher
+       specificity ([data-mode][data-vault-content] = 2 attrs) wins over the rules
+       above; CSS reacts the moment vaultContent flips empty↔stack. The JS focus
+       sync lives in setOpenActions() in bank.js. */
+    .phone[data-mode="vault-open"][data-vault-content="empty"] .buy {
+      opacity: 1;
+      translate: 0 0;
+      pointer-events: auto;
+      visibility: visible;
+      transition-delay: 0s;
+    }
+    .phone[data-mode="vault-open"][data-vault-content="empty"] .vault-actions {
+      opacity: 0;
+      translate: 0 14px;
+      pointer-events: none;
+      visibility: hidden;
+      transition-delay: 0s, 0s, 0s;
+    }
+
     /* Server rack LED blinks — four phases at different periods so the LEDs
        feel organic, not lock-stepped. Pause briefly mid-cycle so the dim moment
        reads as "data activity," not as a strobe. */
