@@ -109,9 +109,16 @@ const markDone = (id) => {
 };
 const paintProgress = () => {
   const done = loadDone();
-  document.querySelectorAll('.bildung-sign').forEach((sign) => {
-    sign.dataset.done = done.has(sign.dataset.lesson) ? 'true' : 'false';
+  const signs = document.querySelectorAll('.bildung-sign');
+  let all = signs.length > 0;
+  signs.forEach((sign) => {
+    const walked = done.has(sign.dataset.lesson);
+    sign.dataset.done = walked ? 'true' : 'false';
+    if (!walked) all = false;
   });
+  // The whole climb done → the summit's treasure glow blooms and the trail of light is lit end to end.
+  const scene = document.querySelector('.bildung-scene');
+  if (scene) scene.dataset.complete = all ? 'true' : 'false';
 };
 
 export const openLesson = (lessonId) => {

@@ -21,6 +21,12 @@
     .bildung-sign .sign-lamp { fill: #7A6840; transition: fill 320ms ease; }
     .bildung-sign[data-done="true"] .sign-glow { opacity: 1; }
     .bildung-sign[data-done="true"] .sign-lamp { fill: #F7C76B; }
+
+    /* Whole climb walked → the summit treasure blooms and the trail is lit end to end. */
+    .vault-glow { transition: opacity 480ms ease; }
+    .bildung-scene[data-complete="true"] .vault-glow { opacity: 1; }
+    .bildung-scene[data-complete="true"] .bildung-sign .sign-glow { opacity: 1; }
+    .bildung-scene[data-complete="true"] .bildung-sign .sign-lamp { fill: #F7C76B; }
     .bildung-newspaper:active .bildung-newspaper-body { translate: 0 3px; }
     .bildung-newspaper:active .bildung-newspaper-shadow { opacity: 0.2; }
     .bildung-sign, .bildung-sign:focus, .bildung-sign:focus-visible, .bildung-sign:focus-within,
