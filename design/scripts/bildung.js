@@ -99,9 +99,26 @@ const setCard = (idx, animate = true) => {
   lessonNextBtn.disabled = idx === max;
 };
 
+// Lesson progress — which signs the user has walked. Persisted; lights the lantern.
+const DONE_KEY = 'bb-bildung-done';
+const loadDone = () => { try { return new Set(JSON.parse(localStorage.getItem(DONE_KEY) || '[]')); } catch { return new Set(); } };
+const markDone = (id) => {
+  const done = loadDone();
+  done.add(String(id));
+  try { localStorage.setItem(DONE_KEY, JSON.stringify([...done])); } catch {}
+};
+const paintProgress = () => {
+  const done = loadDone();
+  document.querySelectorAll('.bildung-sign').forEach((sign) => {
+    sign.dataset.done = done.has(sign.dataset.lesson) ? 'true' : 'false';
+  });
+};
+
 export const openLesson = (lessonId) => {
   const lesson = lessons[lessonId];
   if (!lesson) return;
+  markDone(lessonId);
+  paintProgress();
   currentLesson = lesson;
   currentCardIdx = 0;
   lessonTitleEl.textContent = `${lessonId}. ${lesson.title}`;
@@ -147,6 +164,8 @@ lessonTrackEl.addEventListener('pointerup', (e) => {
   }
 });
 lessonTrackEl.addEventListener('pointercancel', () => { dragStartX = dragStartY = null; });
+
+paintProgress();
 
 // Bildung sign taps open the lesson modal
 document.querySelectorAll('.bildung-sign').forEach((sign) => {
