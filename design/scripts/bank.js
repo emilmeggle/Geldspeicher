@@ -240,6 +240,9 @@ export const closeVault = () => {
     setTimeout(() => {
       if (phone.dataset.mode !== 'closed') return;
       if (!needsCanonicalSnap) return;
+      // Don't churn the DOM (clearAll + respawn) during a room crossfade. If we've
+      // left Bank, keep the snap pending — it runs on the next vault close on Bank.
+      if (phone.dataset.room !== 'bank') return;
       respawnStack();
     }, 400);
   }
@@ -936,6 +939,12 @@ const stepPhysics = (now) => {
   const dt = Math.min(16, now - lastFrame); // cap at 1 frame — prevents lag spiral
   lastFrame = now;
 
+  // Only run the pile (physics, spawn drains, transforms, merges) while Bank is the
+  // active room. Off Bank the chamber is hidden, so this work is pure overhead — and
+  // running it would jank the foundational 460ms CSS room crossfade. Keep the rAF alive
+  // so it resumes instantly on return.
+  if (phone.dataset.room !== 'bank') { requestAnimationFrame(stepPhysics); return; }
+
   // Heaviest first (black ₿ → orange medal → Geldsack → Goldbarren → coins)
   if (pendingBlackSpawns > 0) {
     const x = CHAMBER.cx + (Math.random() - 0.5) * 20;
@@ -1017,6 +1026,12 @@ const stepPhysics = (now) => {
 
   checkCoinMergeTrigger();
   checkSatoshiMergeTrigger();
+  // Higher tiers can now be spawned directly by a buy (queueBuyTiers no longer spills down
+  // to coins), so consolidate them here too — not only via the coin-merge chain. Each is
+  // gated by inProgress() so only one merge animates at a time.
+  checkNuggetMergeTrigger();
+  checkBarrenMergeTrigger();
+  checkBlackMergeTrigger();
   requestAnimationFrame(stepPhysics);
 };
 requestAnimationFrame(stepPhysics);
@@ -1131,26 +1146,29 @@ export const removeDemoSats = (sats) => {
 const queueBuyTiers = (sats) => {
   let remaining = sats;
 
+  // Top tier can't merge upward, so it stays capped at its visual max (2); any value
+  // beyond that decomposes into the tiers below and is corrected by the canonical snap.
   const blackCap = Math.max(0, 2 - blackMedalList.length - pendingBlackSpawns);
   const blacks   = Math.min(blackCap, Math.floor(remaining / BLACK_VALUE));
   pendingBlackSpawns += blacks;
   remaining -= blacks * BLACK_VALUE;
 
-  const medalCap = Math.max(0, 9 - medalList.length - pendingMedalSpawns);
-  const medals   = Math.min(medalCap, Math.floor(remaining / MEDAL_VALUE));
+  // Mid tiers: spawn the FULL count and let the live merge system consolidate (10 → next
+  // tier). Do NOT cap-and-spill the remainder down into coins — that produced a spurious
+  // coins → nugget → bar cascade whenever a tier was already near its merge count.
+  const medals = Math.floor(remaining / MEDAL_VALUE);
   pendingMedalSpawns += medals;
   remaining -= medals * MEDAL_VALUE;
 
-  const sackCap = Math.max(0, 9 - barrenList.length - pendingBarrenSpawns);
-  const sacks   = Math.min(sackCap, Math.floor(remaining / BARREN_VALUE));
+  const sacks = Math.floor(remaining / BARREN_VALUE);   // Goldbarren
   pendingBarrenSpawns += sacks;
   remaining -= sacks * BARREN_VALUE;
 
-  const barCap = Math.max(0, 9 - nuggetList.length - pendingNuggetSpawns);
-  const bars   = Math.min(barCap, Math.floor(remaining / NUGGET_VALUE));
+  const bars = Math.floor(remaining / NUGGET_VALUE);    // Goldnuggets
   pendingNuggetSpawns += bars;
   remaining -= bars * NUGGET_VALUE;
 
+  // Genuine sub-nugget remainder only: coins (< 10) then satoshis (< 20), capped at body limits.
   const coinCap = Math.max(0, MAX_COINS - coinList.length - pendingBuySpawns);
   const coins   = Math.min(coinCap, Math.floor(remaining / COIN_VALUE_SATS));
   pendingBuySpawns += coins;
