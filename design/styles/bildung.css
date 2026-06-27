@@ -27,6 +27,11 @@
     .bildung-scene[data-complete="true"] .vault-glow { opacity: 1; }
     .bildung-scene[data-complete="true"] .bildung-sign .sign-glow { opacity: 1; }
     .bildung-scene[data-complete="true"] .bildung-sign .sign-lamp { fill: #F7C76B; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .bildung-sign-body, .bildung-sign-shadow, .bildung-newspaper-body, .bildung-newspaper-shadow,
+      .bildung-sign .sign-glow, .bildung-sign .sign-lamp, .vault-glow { transition: none; }
+    }
     .bildung-newspaper:active .bildung-newspaper-body { translate: 0 3px; }
     .bildung-newspaper:active .bildung-newspaper-shadow { opacity: 0.2; }
     .bildung-sign, .bildung-sign:focus, .bildung-sign:focus-visible, .bildung-sign:focus-within,
