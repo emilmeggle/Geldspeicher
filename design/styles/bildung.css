@@ -15,11 +15,8 @@
     .bildung-sign:active .bildung-sign-body { translate: 0 4px; }
     .bildung-sign:active .bildung-sign-shadow { opacity: 0.25; }
 
-    /* Lesson progress = the lantern. Unwalked lanterns glow soft; a walked lesson's lantern blooms
-       (and the whole set blooms when the climb is complete). The path itself stays plain earth. */
-    .bildung-sign .sign-glow { opacity: 0.5; transition: opacity 320ms ease; }
-    .bildung-sign[data-done="true"] .sign-glow { opacity: 1; }
-    .bildung-scene[data-complete="true"] .bildung-sign .sign-glow { opacity: 1; }
+    /* Signs are clean wooden planks (no lamps). Per-sign progress visuals are intentionally gone;
+       the earned completion moment (trail-of-light wave + vault bloom) is the only progress cue. */
 
     /* The trail of light is RESERVED for the earned completion moment — the path is plain earth at
        rest (NOT a progress meter). On the live transition to "all walked", a warm wave climbs the
@@ -53,7 +50,7 @@
 
     @media (prefers-reduced-motion: reduce) {
       .bildung-sign-body, .bildung-sign-shadow, .bildung-newspaper-body, .bildung-newspaper-shadow,
-      .bildung-sign .sign-glow, .vault-glow { transition: none; }
+      .vault-glow { transition: none; }
       .phone[data-room="bildung"] .bildung-scene.just-completed .trail-seg,
       .phone[data-room="bildung"] .bildung-scene.just-completed .vault-glow { animation: none; }
     }
