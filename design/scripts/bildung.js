@@ -149,13 +149,6 @@ lessonPrevBtn.addEventListener('click', () => setCard(currentCardIdx - 1));
 lessonNextBtn.addEventListener('click', () => setCard(currentCardIdx + 1));
 lessonModal.addEventListener('click', (e) => { if (e.target === lessonModal) closeLesson(); });
 
-document.addEventListener('keydown', (e) => {
-  if (lessonModal.dataset.open !== 'true') return;
-  if (e.key === 'Escape') closeLesson();
-  else if (e.key === 'ArrowLeft') setCard(currentCardIdx - 1);
-  else if (e.key === 'ArrowRight') setCard(currentCardIdx + 1);
-});
-
 // Swipe gesture on the card track
 let dragStartX = null;
 let dragStartY = null;
@@ -233,11 +226,30 @@ newspaperNextEdge.addEventListener('click', () => {
 newspaperModal.addEventListener('click', (e) => {
   if (e.target === newspaperModal) closeNewspaper();
 });
+
+// One keydown listener for whichever modal is open: Esc/arrows + a focus trap
+// (keeps Tab inside the open modal). Replaces the two near-identical per-modal listeners.
+const trapFocus = (modal, e) => {
+  if (e.key !== 'Tab') return;
+  const list = [...modal.querySelectorAll('button, [tabindex]:not([tabindex="-1"])')]
+    .filter((el) => !el.disabled && el.offsetParent !== null);
+  if (!list.length) return;
+  const first = list[0], last = list[list.length - 1];
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+};
 document.addEventListener('keydown', (e) => {
-  if (newspaperModal.dataset.open !== 'true') return;
-  if (e.key === 'Escape') closeNewspaper();
-  else if (e.key === 'ArrowLeft')  setNewspaperPage(newspaperPageIdx - 1);
-  else if (e.key === 'ArrowRight') setNewspaperPage(newspaperPageIdx + 1);
+  if (lessonModal.dataset.open === 'true') {
+    if (e.key === 'Escape') closeLesson();
+    else if (e.key === 'ArrowLeft') setCard(currentCardIdx - 1);
+    else if (e.key === 'ArrowRight') setCard(currentCardIdx + 1);
+    else trapFocus(lessonModal, e);
+  } else if (newspaperModal.dataset.open === 'true') {
+    if (e.key === 'Escape') closeNewspaper();
+    else if (e.key === 'ArrowLeft') setNewspaperPage(newspaperPageIdx - 1);
+    else if (e.key === 'ArrowRight') setNewspaperPage(newspaperPageIdx + 1);
+    else trapFocus(newspaperModal, e);
+  }
 });
 
 const newspaperSign = document.querySelector('.bildung-newspaper');
