@@ -112,6 +112,7 @@ const markDone = (id) => {
   done.add(String(id));
   try { localStorage.setItem(DONE_KEY, JSON.stringify([...done])); } catch {}
 };
+let progressInited = false;
 const paintProgress = () => {
   const done = loadDone();
   const signs = document.querySelectorAll('.bildung-sign');
@@ -121,9 +122,23 @@ const paintProgress = () => {
     sign.dataset.done = walked ? 'true' : 'false';
     if (!walked) all = false;
   });
-  // The whole climb done → the summit's treasure glow blooms and the trail of light is lit end to end.
+  // The trail of light is the progress: light the matching segment for each walked lesson
+  // (independent, out-of-order safe — lesson N -> segment N).
+  document.querySelectorAll('.trail-seg').forEach((seg) => {
+    seg.dataset.done = done.has(seg.dataset.seg) ? 'true' : 'false';
+  });
   const scene = document.querySelector('.bildung-scene');
-  if (scene) scene.dataset.complete = all ? 'true' : 'false';
+  if (scene) {
+    const wasComplete = scene.dataset.complete === 'true';
+    scene.dataset.complete = all ? 'true' : 'false';
+    // Earned moment: only on the live transition INTO complete (not on initial paint for a
+    // returning user), run the one-shot sweep up the trail into the vault glow.
+    if (progressInited && all && !wasComplete) {
+      scene.classList.add('just-completed');
+      setTimeout(() => scene.classList.remove('just-completed'), 3000);
+    }
+  }
+  progressInited = true;
 };
 
 export const openLesson = (lessonId) => {

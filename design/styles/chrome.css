@@ -61,14 +61,18 @@
       border-radius: 999px;
     }
 
-    /* Lesson modal — swipeable card stack */
+    /* Lesson modal — swipeable card stack. Scrim = the night, with a low warm pool of
+       lantern-light behind the card (amber firelight, NOT the reserved orange) so reading
+       feels lit by the lantern you carried up the trail. */
     .lesson-modal {
       position: absolute;
       inset: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(15,22,30,0.55);
+      background:
+        radial-gradient(125% 78% at 50% 46%, rgba(122,86,52,0.34) 0%, rgba(122,86,52,0.10) 40%, rgba(16,26,22,0) 72%),
+        rgba(18,28,24,0.62);
       z-index: 50;
       opacity: 0;
       pointer-events: none;
@@ -407,4 +411,11 @@
     .newspaper-edge:not([aria-disabled="true"]):active::after { opacity: 0.75; }
     @media (hover: hover) {
       .newspaper-edge:not([aria-disabled="true"]):hover::after { opacity: 0.45; }
+    }
+
+    /* Respect reduced-motion in the reading surfaces — the lesson card-pager and the Tagesblatt
+       open/turn/close are slides; keep their final state, drop the movement. */
+    @media (prefers-reduced-motion: reduce) {
+      .lesson-modal, .lesson-modal-frame, .lesson-modal-track,
+      .newspaper-modal, .newspaper-page, .newspaper-track { transition: none; }
     }

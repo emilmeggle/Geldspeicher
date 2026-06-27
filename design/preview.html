@@ -104,6 +104,8 @@
                 <radialGradient id="bdWarm" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#F7B24A" stop-opacity="0.55"/><stop offset="0.6" stop-color="#F7931A" stop-opacity="0.16"/><stop offset="1" stop-color="#F7931A" stop-opacity="0"/></radialGradient>
                 <pattern id="bdHatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><line x1="0" y1="0" x2="0" y2="6" stroke="#1A2028" stroke-width="1" opacity="0.55"/></pattern>
                 <pattern id="bdDots" width="8" height="8" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="#C7D4CC" opacity="0.4"/></pattern>
+                <!-- Centerline of the earthen ribbon (averaged from its two edges) — carrier for the trail of light. -->
+                <path id="trailSpine" fill="none" pathLength="100" d="M200,724 C164,672 261,612 237,548 C217,492 161,460 179,402 C193,356 251,338 235,288 C214,258 198,256 198,252"/>
               </defs>
 
               <rect x="0" y="0" width="393" height="780" fill="url(#bdSky)"/>
@@ -143,6 +145,15 @@
               <g stroke="#4E3C22" stroke-width="1.5" stroke-linecap="round" opacity="0.5">
                 <path d="M232,700 l9,4"/><path d="M214,648 l-9,4"/><path d="M236,592 l8,4"/><path d="M210,520 l-9,3"/><path d="M214,448 l9,3"/><path d="M196,392 l-8,3"/><path d="M232,338 l8,3"/></g>
               <g fill="#6E5430" stroke="#3A2C1A" stroke-width="0.7" opacity="0.9"><ellipse cx="206" cy="690" rx="5" ry="3"/><ellipse cx="244" cy="556" rx="4" ry="2.5"/><ellipse cx="182" cy="470" rx="4.4" ry="2.6"/><ellipse cx="232" cy="360" rx="3.4" ry="2.2"/></g>
+
+              <!-- The trail of light: the ribbon becomes the warm path to the treasure. Four quarter-segments,
+                   each lit by its own lesson (data-seg 1..4, bottom->top); completion sweeps them into the vault glow. -->
+              <g class="trail-light" pointer-events="none">
+                <g class="trail-seg" data-seg="1"><use href="#trailSpine" class="t-outer"/><use href="#trailSpine" class="t-mid"/><use href="#trailSpine" class="t-core"/></g>
+                <g class="trail-seg" data-seg="2"><use href="#trailSpine" class="t-outer"/><use href="#trailSpine" class="t-mid"/><use href="#trailSpine" class="t-core"/></g>
+                <g class="trail-seg" data-seg="3"><use href="#trailSpine" class="t-outer"/><use href="#trailSpine" class="t-mid"/><use href="#trailSpine" class="t-core"/></g>
+                <g class="trail-seg" data-seg="4"><use href="#trailSpine" class="t-outer"/><use href="#trailSpine" class="t-mid"/><use href="#trailSpine" class="t-core"/></g>
+              </g>
 
               <use href="#bdFir3" x="-30" y="360" width="84" height="150" style="color:#13231A"/>
               <use href="#bdFir" x="40" y="392" width="60" height="116" style="color:#16271D"/>
