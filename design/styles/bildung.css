@@ -15,44 +15,45 @@
     .bildung-sign:active .bildung-sign-body { translate: 0 4px; }
     .bildung-sign:active .bildung-sign-shadow { opacity: 0.25; }
 
-    /* Progress lives on the TRAIL now. The lanterns relax to constant warm lamps that simply
-       mark each station — one progress signal (the lit path), never two. */
-    .bildung-sign .sign-glow { opacity: 0.7; }
+    /* Lesson progress = the lantern. Unwalked lanterns glow soft; a walked lesson's lantern blooms
+       (and the whole set blooms when the climb is complete). The path itself stays plain earth. */
+    .bildung-sign .sign-glow { opacity: 0.5; transition: opacity 320ms ease; }
+    .bildung-sign[data-done="true"] .sign-glow { opacity: 1; }
+    .bildung-scene[data-complete="true"] .bildung-sign .sign-glow { opacity: 1; }
 
-    /* The trail of light — the earthen ribbon becomes the warm path to the treasure.
-       One reused centerline (#trailSpine), split into 4 quarter-segments via stroke-dash; each
-       segment lights when ITS lesson is read (out-of-order safe). Glow = 3 stacked strokes, no filter. */
+    /* The trail of light is RESERVED for the earned completion moment — the path is plain earth at
+       rest (NOT a progress meter). On the live transition to "all walked", a warm wave climbs the
+       four segments bottom→top and dies into the vault glow, then fades; the path returns to earth.
+       One reused centerline (#trailSpine), split into 4 quarter-segments via stroke-dash. */
     .trail-light use { fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 25 75; }
-    .trail-light .t-outer { stroke: #F7931A; stroke-width: 15; opacity: 0.10; }
-    .trail-light .t-mid   { stroke: #F7B24A; stroke-width: 8;  opacity: 0.26; }
-    .trail-light .t-core  { stroke: #FAD79A; stroke-width: 3.2; opacity: 0.95; }
+    .trail-light .t-outer { stroke: #F7931A; stroke-width: 16; opacity: 0.40; }
+    .trail-light .t-mid   { stroke: #F7B24A; stroke-width: 9;  opacity: 0.65; }
+    .trail-light .t-core  { stroke: #FAD79A; stroke-width: 3.4; opacity: 1; }
     .trail-seg[data-seg="1"] use { stroke-dashoffset: 0; }
     .trail-seg[data-seg="2"] use { stroke-dashoffset: 75; }
     .trail-seg[data-seg="3"] use { stroke-dashoffset: 50; }
     .trail-seg[data-seg="4"] use { stroke-dashoffset: 25; }
-    .trail-seg { opacity: 0.5; }
-    .phone[data-room="bildung"] .trail-seg { transition: opacity 320ms ease; }
-    .phone[data-room="bildung"] .trail-seg[data-done="true"] { opacity: 1; }
+    .trail-seg { opacity: 0; }
 
-    /* Vault treasure-glow blooms when the whole climb is walked. */
+    /* Vault treasure-glow blooms when the whole climb is walked (and stays lit afterward). */
     .vault-glow { transition: opacity 480ms ease; }
     .phone[data-room="bildung"] .bildung-scene[data-complete="true"] .vault-glow { opacity: 1; }
 
-    /* Earned completion moment — a slow warm SWEEP up the four segments that dies into the vault
-       glow. One-shot via .just-completed (added only on the transition into complete). Not a burst. */
-    .phone[data-room="bildung"] .bildung-scene.just-completed .trail-seg { animation: bdTrailSweep 720ms ease-out both; }
+    /* Earned completion moment — one-shot via .just-completed (added only on the live transition into
+       complete). Each segment rises then falls (a wave), staggered up the climb; the vault blooms as
+       the wave arrives. Deliberately a slow wave, not a Lichtenstein burst. */
+    .phone[data-room="bildung"] .bildung-scene.just-completed .trail-seg { animation: bdTrailSweep 1100ms ease-in-out both; }
     .phone[data-room="bildung"] .bildung-scene.just-completed .trail-seg[data-seg="1"] { animation-delay: 0ms; }
-    .phone[data-room="bildung"] .bildung-scene.just-completed .trail-seg[data-seg="2"] { animation-delay: 500ms; }
-    .phone[data-room="bildung"] .bildung-scene.just-completed .trail-seg[data-seg="3"] { animation-delay: 1000ms; }
-    .phone[data-room="bildung"] .bildung-scene.just-completed .trail-seg[data-seg="4"] { animation-delay: 1500ms; }
-    .phone[data-room="bildung"] .bildung-scene.just-completed .vault-glow { animation: bdVaultBloom 900ms ease-out 1800ms both; }
-    @keyframes bdTrailSweep { from { opacity: 0.5; } to { opacity: 1; } }
+    .phone[data-room="bildung"] .bildung-scene.just-completed .trail-seg[data-seg="2"] { animation-delay: 350ms; }
+    .phone[data-room="bildung"] .bildung-scene.just-completed .trail-seg[data-seg="3"] { animation-delay: 700ms; }
+    .phone[data-room="bildung"] .bildung-scene.just-completed .trail-seg[data-seg="4"] { animation-delay: 1050ms; }
+    .phone[data-room="bildung"] .bildung-scene.just-completed .vault-glow { animation: bdVaultBloom 900ms ease-out 1600ms both; }
+    @keyframes bdTrailSweep { 0% { opacity: 0; } 38% { opacity: 1; } 100% { opacity: 0; } }
     @keyframes bdVaultBloom { from { opacity: 0.55; } to { opacity: 1; } }
 
     @media (prefers-reduced-motion: reduce) {
       .bildung-sign-body, .bildung-sign-shadow, .bildung-newspaper-body, .bildung-newspaper-shadow,
       .bildung-sign .sign-glow, .vault-glow { transition: none; }
-      .phone[data-room="bildung"] .trail-seg { transition: none; }
       .phone[data-room="bildung"] .bildung-scene.just-completed .trail-seg,
       .phone[data-room="bildung"] .bildung-scene.just-completed .vault-glow { animation: none; }
     }

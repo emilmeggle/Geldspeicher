@@ -122,11 +122,6 @@ const paintProgress = () => {
     sign.dataset.done = walked ? 'true' : 'false';
     if (!walked) all = false;
   });
-  // The trail of light is the progress: light the matching segment for each walked lesson
-  // (independent, out-of-order safe — lesson N -> segment N).
-  document.querySelectorAll('.trail-seg').forEach((seg) => {
-    seg.dataset.done = done.has(seg.dataset.seg) ? 'true' : 'false';
-  });
   const scene = document.querySelector('.bildung-scene');
   if (scene) {
     const wasComplete = scene.dataset.complete === 'true';
