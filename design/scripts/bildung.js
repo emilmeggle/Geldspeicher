@@ -86,6 +86,8 @@ const lessonNextBtn = lessonModal.querySelector('.lesson-modal-next');
 let currentLesson = null;
 let currentLessonId = null;
 let currentCardIdx = 0;
+let lessonReturnEl = null;
+let newspaperReturnEl = null;
 
 const setCard = (idx, animate = true) => {
   if (!currentLesson) return;
@@ -135,6 +137,7 @@ export const openLesson = (lessonId) => {
     `<article class="lesson-card"><h3>${c.h}</h3>${c.body}</article>`
   ).join('');
   setCard(0, false);
+  lessonReturnEl = document.activeElement;
   lessonModal.dataset.open = 'true';
   requestAnimationFrame(() => lessonCloseBtn.focus());
 };
@@ -142,6 +145,8 @@ export const openLesson = (lessonId) => {
 export const closeLesson = () => {
   lessonModal.dataset.open = 'false';
   currentLesson = null;
+  if (lessonReturnEl && lessonReturnEl.focus) lessonReturnEl.focus();
+  lessonReturnEl = null;
 };
 
 lessonCloseBtn.addEventListener('click', closeLesson);
@@ -204,6 +209,7 @@ export const openNewspaper = () => {
   const dateOpts = { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' };
   newspaperDateEl.textContent = new Date().toLocaleDateString('de-DE', dateOpts);
   setNewspaperPage(0, false);
+  newspaperReturnEl = document.activeElement;
   newspaperModal.dataset.open = 'true';
   newspaperModal.setAttribute('aria-hidden', 'false');
   requestAnimationFrame(() => newspaperCloseBtn.focus());
@@ -212,6 +218,8 @@ export const openNewspaper = () => {
 export const closeNewspaper = () => {
   newspaperModal.dataset.open = 'false';
   newspaperModal.setAttribute('aria-hidden', 'true');
+  if (newspaperReturnEl && newspaperReturnEl.focus) newspaperReturnEl.focus();
+  newspaperReturnEl = null;
 };
 
 newspaperCloseBtn.addEventListener('click', closeNewspaper);
