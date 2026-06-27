@@ -84,6 +84,7 @@ const lessonPrevBtn = lessonModal.querySelector('.lesson-modal-prev');
 const lessonNextBtn = lessonModal.querySelector('.lesson-modal-next');
 
 let currentLesson = null;
+let currentLessonId = null;
 let currentCardIdx = 0;
 
 const setCard = (idx, animate = true) => {
@@ -97,6 +98,8 @@ const setCard = (idx, animate = true) => {
   lessonCounterEl.textContent = `${idx + 1} / ${currentLesson.cards.length}`;
   lessonPrevBtn.disabled = idx === 0;
   lessonNextBtn.disabled = idx === max;
+  // The lantern means "I walked this lesson" — light it once the last card is reached.
+  if (idx === max && currentLessonId != null) { markDone(currentLessonId); paintProgress(); }
 };
 
 // Lesson progress — which signs the user has walked. Persisted; lights the lantern.
@@ -124,9 +127,8 @@ const paintProgress = () => {
 export const openLesson = (lessonId) => {
   const lesson = lessons[lessonId];
   if (!lesson) return;
-  markDone(lessonId);
-  paintProgress();
   currentLesson = lesson;
+  currentLessonId = lessonId;
   currentCardIdx = 0;
   lessonTitleEl.textContent = `${lessonId}. ${lesson.title}`;
   lessonTrackEl.innerHTML = lesson.cards.map((c) =>
