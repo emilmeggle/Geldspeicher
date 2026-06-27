@@ -9,9 +9,15 @@ import {
 
 const LOADING_MS = 280;
 const SETTLE_MS  = 520; // door starts closing 380ms; wait for canonical respawn
+// Focus restore waits past the CTA swap (bank.css transition-delay) so the
+// now-primary control is visible/focusable before we target it — a hidden
+// element can't take focus.
+const CLOSE_FOCUS_MS = 380;
 
 const phone        = document.querySelector('.phone');
 const sellButton   = document.querySelector('.vault-action--sell');
+const buyButton    = document.querySelector('.buy');
+const sendAction   = document.querySelector('.vault-action--send');
 const scrim        = document.querySelector('.sell-scrim');
 const sheet        = document.querySelector('.sell-sheet');
 const chips        = [...document.querySelectorAll('.sell-chip')];
@@ -100,11 +106,26 @@ const openSellSheet = () => {
   scrim.classList.add('is-active');
 };
 
+// After the sheet closes, focus would orphan to <body> (the confirm button is
+// hidden with the sheet). Restore it to whatever CTA is now primary: the buy
+// button when it's the active control (e.g. after selling everything, or once the
+// vault auto-closes), otherwise the vault Senden action. preventScroll so we never
+// nudge the room track sideways.
+const focusPrimaryCTA = () => {
+  const target = buyButton.getAttribute('aria-hidden') === 'false' ? buyButton : sendAction;
+  target?.focus({ preventScroll: true });
+};
+
 const closeSellSheet = () => {
+  const wasOpen = sheet.dataset.step !== 'none';
   sheet.dataset.step = 'none';
   scrim.classList.remove('is-active');
   confirmBtn.disabled = false;
   confirmBtn.textContent = 'Jetzt verkaufen';
+  // Defer past the CTA swap so the now-primary control is visible (focusable)
+  // before we target it. The later vault auto-close (executeSell) re-homes focus
+  // again, since closing hides Senden/Verkaufen.
+  if (wasOpen) setTimeout(focusPrimaryCTA, CLOSE_FOCUS_MS);
 };
 
 const toConfirm = () => {
@@ -135,8 +156,10 @@ const executeSell = () => {
     animateStackCounter(oldSats, newSats, 1100);
     removeDemoSats(sellSats);
     // After the animation lands, close the vault so the user gets the door
-    // shutting on the new balance — feels like the sell completed.
-    setTimeout(() => closeVault(), 1100 + SETTLE_MS);
+    // shutting on the new balance — feels like the sell completed. Re-home focus
+    // afterwards: closing the vault hides Senden/Verkaufen, so without this a
+    // partial sell would orphan focus to <body> once the door shuts.
+    setTimeout(() => { closeVault(); focusPrimaryCTA(); }, 1100 + SETTLE_MS);
   }, LOADING_MS);
 };
 

@@ -194,8 +194,10 @@
     }
     .buy-sheet__custom-input::placeholder,
     .sell-sheet__custom-input::placeholder {
+      /* Full-strength --label (cool grey) reads as a placeholder against the cream
+         entered text while clearing ~4.8:1 on --stone; opacity:0.45 had it at ~2.2:1. */
       color: var(--label);
-      opacity: 0.45;
+      opacity: 1;
     }
     .buy-sheet__custom-input::-webkit-inner-spin-button,
     .buy-sheet__custom-input::-webkit-outer-spin-button,

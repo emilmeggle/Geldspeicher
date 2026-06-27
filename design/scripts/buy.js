@@ -8,9 +8,14 @@ import {
 } from './bank.js';
 const LOADING_MS = 280;        // "…" loading beat before buy fires
 const VAULT_SIGN_DELAY_MS = 300; // matches CSS transition-delay for the stack sign
+// Focus restore must wait past the CTA swap: on a completed buy the vault-actions
+// row is visibility:hidden for the first 300ms of the open choreography (bank.css
+// transition-delay), and a hidden element can't take focus.
+const CLOSE_FOCUS_MS = 380;
 
-const phone     = document.querySelector('.phone');
-const buyButton = document.querySelector('.buy');
+const phone      = document.querySelector('.phone');
+const buyButton  = document.querySelector('.buy');
+const sendAction = document.querySelector('.vault-action--send');
 const scrim     = document.querySelector('.buy-scrim');
 const sheet     = document.querySelector('.buy-sheet');
 const chips     = [...document.querySelectorAll('.buy-chip')];
@@ -62,11 +67,25 @@ const openBuySheet = () => {
   updateAmountDisplay();
 };
 
+// After the sheet closes, focus would orphan to <body> (the confirm button is
+// hidden with the sheet). Restore it to whatever CTA is now primary: the buy
+// button when it's the active control (closed / open-empty vault), otherwise the
+// vault Senden action. preventScroll so we never nudge the room track sideways.
+const focusPrimaryCTA = () => {
+  const target = buyButton.getAttribute('aria-hidden') === 'false' ? buyButton : sendAction;
+  target?.focus({ preventScroll: true });
+};
+
 const closeBuySheet = () => {
+  const wasOpen = sheet.dataset.step !== 'none';
   sheet.dataset.step = 'none';
   scrim.classList.remove('is-active');
   confirmBtn.disabled = false;
   confirmBtn.textContent = 'Jetzt kaufen';
+  // Defer past the CTA swap so the now-primary control is visible (focusable)
+  // before we target it — covers both the cancel (buy button) and the completed-buy
+  // (Senden, which fades in after 300ms) cases.
+  if (wasOpen) setTimeout(focusPrimaryCTA, CLOSE_FOCUS_MS);
 };
 
 const toConfirm = () => {
