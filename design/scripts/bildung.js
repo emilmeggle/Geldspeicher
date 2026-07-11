@@ -1,5 +1,6 @@
-// Bildung lessons — fresh German content, story-shaped, ~80-100 words per card.
-// Topic taxonomy follows public beginner-Bitcoin curriculum; prose is original.
+// Bildung lessons — final German copy, story-shaped, ~80-100 words per card.
+// The arc ends in graduation: custodial today, your own key when you're ready
+// (the lantern-trail completion moment is the ceremony). Prose is original.
 const lessons = {
   1: {
     title: "Was ist Geld?",
@@ -48,11 +49,11 @@ const lessons = {
       },
       {
         h: "Wie viel?",
-        body: `<p>Faustregel: nur, was du nicht brauchst. Nicht die Miete. Nicht das Ersparte für die Steuer.</p><p>Ein Bitcoin kostet zu viel? Du kaufst nicht ganze Bitcoin. Du kaufst Sats — jede Münze hat 100.000.000 davon. 10 € sind heute etwa 10.000 Sats.</p><strong>Klein anfangen. Nur dranbleiben.</strong>`
+        body: `<p>Faustregel: nur, was du nicht brauchst. Nicht die Miete. Nicht das Ersparte für die Steuer.</p><p>Ein Bitcoin kostet zu viel? Du kaufst nicht ganze Bitcoin. Du kaufst Sats — jede Münze hat 100.000.000 davon. 10 € sind heute etwa 10.000 Sats.</p><p>Und der Preis? Der schwankt in Euro — aber 1 Bitcoin bleibt 1 Bitcoin. Wer spart, zählt Sats, nicht Tageskurse.</p><strong>Klein anfangen. Nur dranbleiben.</strong>`
       },
       {
-        h: "Was kostet das wirklich?",
-        body: `<p>Wenn du Bitcoin kaufst, gibst du Euro auf. Steigt der Preis, hast du gewonnen. Fällt er, hast du verloren — gemessen in Euro.</p><p>Aber: 1 Bitcoin bleibt 1 Bitcoin. Die Kaufkraft eines Bitcoin gegen Eier, Brote, Häuser hat über 15 Jahre stetig zugenommen.</p><strong>Der Euro-Preis ist Lärm. Die Knappheit ist das Signal.</strong>`
+        h: "Steuern — Geduld wird belohnt",
+        body: `<p>In Deutschland gilt eine einfache Regel: Hältst du Bitcoin länger als ein Jahr, ist dein Gewinn beim Verkauf steuerfrei. Komplett.</p><p>Verkaufst du früher, sind Gewinne steuerpflichtig, sobald sie über 1.000 € im Jahr liegen — wie bei anderen privaten Verkäufen auch.</p><p>Das Gesetz belohnt also genau das, was ohnehin klug ist: kaufen, halten, in Ruhe lassen.</p><strong>Die Haltefrist belohnt Geduld: ein Jahr warten, steuerfrei verkaufen.</strong>`
       }
     ]
   },
@@ -64,12 +65,16 @@ const lessons = {
         body: `<p>Eine Wallet ist nicht der Ort, wo dein Bitcoin liegt. Bitcoin liegt im Netzwerk. Eine Wallet ist der Schlüssel, mit dem du es bewegen kannst.</p><p>Es gibt zwei Arten:</p><p>· <b>Software-Wallet</b> — App auf deinem Handy. Bequem, aber nur so sicher wie dein Handy.<br>· <b>Hardware-Wallet</b> — ein kleines Gerät, offline. Aufwändiger, aber unangreifbar.</p><strong>Die Wallet ist der Schlüssel. Nicht das Schloss.</strong>`
       },
       {
-        h: "Privater Schlüssel — der einzige Schlüssel",
-        body: `<p>Wer den privaten Schlüssel hat, hat den Bitcoin. Punkt.</p><p>Verlierst du ihn, ist der Bitcoin weg — niemand kann ihn dir zurückgeben. Auch wir nicht.</p><p>Gibt jemand anderes ihn ein, sind die Bitcoin weg — niemand kann sie zurückholen.</p><strong>Wer den Schlüssel hat, hat das Geld.</strong>`
+        h: "Wer den Schlüssel hat, hat das Geld",
+        body: `<p>Bitcoin gehört dem, der den privaten Schlüssel hat. Punkt. Kein Passwort-Zurücksetzen, keine Hotline, die ihn wiederherstellt.</p><p>Heute verwahrt dein Geldspeicher diesen Schlüssel für dich — so wie eine Bank dein Erspartes verwahrt. Du musst nichts aufschreiben, nichts verlieren können.</p><p>Aber das Ziel ist, dass du ihn eines Tages selbst hältst.</p><strong>Verwahrt für dich — bis du bereit bist, selbst zu verwahren.</strong>`
       },
       {
         h: "Wie bewahrt man es sicher auf?",
-        body: `<p>Drei Regeln:</p><p>1. Schreibe deine Wiederherstellungswörter auf Papier. Kein Foto. Kein Cloud-Backup.</p><p>2. Bewahre sie an zwei Orten auf — z. B. zu Hause und im Bankschließfach.</p><p>3. Sage niemandem, dass du Bitcoin hast. Auch nicht Kollegen am Stammtisch.</p><strong>Bitcoin ist Eigenverantwortung. Das ist die Stärke und die Last zugleich.</strong>`
+        body: `<p>Wenn du deinen Schlüssel selbst hältst, gelten drei Regeln:</p><p>1. Schreibe deine Wiederherstellungswörter auf Papier. Kein Foto. Kein Cloud-Backup.</p><p>2. Bewahre sie an zwei Orten auf — z. B. zu Hause und im Bankschließfach.</p><p>3. Sage niemandem, dass du Bitcoin hast. Auch nicht Kollegen am Stammtisch.</p><strong>Bitcoin ist Eigenverantwortung. Das ist die Stärke und die Last zugleich.</strong>`
+      },
+      {
+        h: "Bereit für deinen eigenen Schlüssel?",
+        body: `<p>Du hast den Weg gesehen: was Geld ist, warum Bitcoin, wie man kauft, wie man sichert. Mehr braucht es nicht.</p><p>Wenn du so weit bist, nimmst du deinen Schlüssel selbst in die Hand — dein Bitcoin wandert auf deine eigene Wallet. Niemand steht mehr dazwischen.</p><p>Kein Druck. Deine Münzen bleiben deine, ob heute oder in einem Jahr.</p><strong>Der Weg ist beleuchtet. Gehen kannst du ihn, wann du willst.</strong>`
       }
     ]
   }
@@ -216,8 +221,8 @@ const setNewspaperPage = (idx, animate = true) => {
 };
 
 export const openNewspaper = () => {
-  const dateOpts = { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' };
-  newspaperDateEl.textContent = new Date().toLocaleDateString('de-DE', dateOpts);
+  // Monthly issue — the Monatsblatt carries a month, not a day.
+  newspaperDateEl.textContent = new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
   setNewspaperPage(0, false);
   newspaperReturnEl = document.activeElement;
   newspaperModal.dataset.open = 'true';
@@ -269,6 +274,11 @@ document.addEventListener('keydown', (e) => {
     else trapFocus(newspaperModal, e);
   }
 });
+
+// Board teaser shows the current issue's month (Monatsblatt = monthly cadence).
+// Month name only — "September" still fits the 70px plank, "Ausgabe September" wouldn't.
+const boteIssueEl = document.querySelector('.bote-issue');
+if (boteIssueEl) boteIssueEl.textContent = new Date().toLocaleDateString('de-DE', { month: 'long' });
 
 const newspaperSign = document.querySelector('.bildung-newspaper');
 if (newspaperSign) {
